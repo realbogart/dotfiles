@@ -2,3 +2,6 @@
 	path = nvim
 	url = git@github.com:realbogart/NvChad.git
   branch = johan
+[submodule "tmux"]
+	path = tmux
+	url = git@github.com:realbogart/tmux.git
