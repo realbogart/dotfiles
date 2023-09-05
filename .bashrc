@@ -1,5 +1,4 @@
 # ~/.bashrc: executed by bash(1) for non-login shells.
-
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
 
@@ -97,15 +96,6 @@ alias l='ls -CF'
 #   sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
-# Alias definitions.
-# You may want to put all your additions into a separate file like
-# ~/.bash_aliases, instead of adding them here directly.
-# See /usr/share/doc/bash-doc/examples in the bash-doc package.
-
-if [ -f ~/.bash_aliases ]; then
-    . ~/.bash_aliases
-fi
-
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
@@ -117,18 +107,10 @@ if ! shopt -oq posix; then
   fi
 fi
 
-export PATH=~/.config/emacs/bin:$PATH
-setxkbmap -option ctrl:nocaps
-alias e='emacsclient -c -n -a \"\"' 
+export PATH=~/.pyenv/bin:~/.local/bin:~/projects/wsl-utils:$PATH
 
 export CC=clang
 export CXX=clang++
-# [ -f ~/.fzf.bash ] && source ~/.fzf.bash.bashrc
+export EDITOR=nvim
 
-# pyenv
-export PATH="$HOME/.pyenv/bin:$PATH"
-eval "$(pyenv init --path)"
-eval "$(pyenv virtualenv-init -)"
-
-
-[ -f "/home/johanyngman/.ghcup/env" ] && source "/home/johanyngman/.ghcup/env" # ghcup-env
+[ -f "~/.ghcup/env" ] && source "~/.ghcup/env" # ghcup-env
