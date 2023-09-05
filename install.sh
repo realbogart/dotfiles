@@ -9,4 +9,5 @@ ln -s $SCRIPTPATH/.bashrc ~/.bashrc
 ln -s $SCRIPTPATH/.zshrc ~/.zshrc
 ln -s $SCRIPTPATH/nvim ~/.config
 ln -s $SCRIPTPATH/tmux ~/.config
+ln -s $SCRIPTPATH/starship.toml ~/.config
 
