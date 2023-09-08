@@ -102,4 +102,4 @@ source $ZSH/oh-my-zsh.sh
 #
 eval "$(starship init zsh)"
 
-[ -f "~/.ghcup/env" ] && source "~/.ghcup/env" # ghcup-env
+[ -f "$HOME/.ghcup/env" ] && source "$HOME/.ghcup/env" # ghcup-env
