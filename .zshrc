@@ -102,4 +102,10 @@ source $ZSH/oh-my-zsh.sh
 #
 eval "$(starship init zsh)"
 
+export PATH=~/.pyenv/bin:~/.local/bin:~/projects/wsl-utils:$PATH
+
+export CC=clang
+export CXX=clang++
+export EDITOR=nvim
+
 [ -f "$HOME/.ghcup/env" ] && source "$HOME/.ghcup/env" # ghcup-env
