@@ -115,4 +115,4 @@ export EDITOR=nvim
 
 [ -f "~/.ghcup/env" ] && source "~/.ghcup/env" # ghcup-env
 
-setxbmap se
+setxkbmap se
