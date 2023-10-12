@@ -102,7 +102,7 @@ source $ZSH/oh-my-zsh.sh
 #
 eval "$(starship init zsh)"
 
-export PATH=~/.pyenv/bin:~/.local/bin:~/projects/wsl-utils:$PATH
+export PATH=~/.pyenv/bin:~/.local/bin:~/projects/wsl-utils:/snap/bin:$PATH
 
 export CC=clang
 export CXX=clang++
