@@ -115,4 +115,4 @@ export EDITOR=nvim
 
 [ -f "~/.ghcup/env" ] && source "~/.ghcup/env" # ghcup-env
 
-setxkbmap se
+setxkbmap -layout se -variant nodeadkeys -option terminate:ctrl_alt_bksp,ctrl:nocaps
