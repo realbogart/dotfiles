@@ -107,6 +107,7 @@ export PATH=~/.pyenv/bin:~/projects/wsl-utils:/snap/bin:$PATH:~/.local/bin
 export CC=clang
 export CXX=clang++
 export EDITOR=nvim
+export OKTA_USERNAME=johan.yngman
 
 [ -f "$HOME/.ghcup/env" ] && source "$HOME/.ghcup/env" # ghcup-env
 
