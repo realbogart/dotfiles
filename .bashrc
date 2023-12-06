@@ -107,7 +107,7 @@ if ! shopt -oq posix; then
   fi
 fi
 
-export PATH=~/.pyenv/bin:~/projects/wsl-utils:/snap/bin:$PATH:~/.local/bin
+export PATH=~/.pyenv/bin:~/projects/wsl-utils:/snap/bin:$PATH:~/local/bin:~/.local/bin
 
 export CC=clang
 export CXX=clang++
