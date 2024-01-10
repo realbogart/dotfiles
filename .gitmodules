@@ -1,6 +1,8 @@
 [submodule "tmux"]
 	path = tmux
 	url = git@github.com:realbogart/tmux.git
+	branch = main
 [submodule "nvim"]
 	path = nvim
 	url = git@github.com:realbogart/nvim.git
+	branch = master
