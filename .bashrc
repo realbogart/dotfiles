@@ -113,6 +113,7 @@ export CC=clang
 export CXX=clang++
 export EDITOR=nvim
 export OKTA_USERNAME=johan.yngman
+export XDG_CONFIG_HOME=~/.config
 
 [ -f "~/.ghcup/env" ] && source "~/.ghcup/env" # ghcup-env
 

@@ -1,0 +1,12 @@
+[user]
+	email = johan.yngman@gmail.com
+	name = Johan Yngman
+[pull]
+	rebase = true
+[submodule]
+	recurse = true
+[core]
+	editor = nvim
+	autocrlf = input
+[merge]
+	ff = only

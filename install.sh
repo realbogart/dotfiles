@@ -11,4 +11,5 @@ ln -s $SCRIPTPATH/nvim ~/.config
 ln -s $SCRIPTPATH/nvim/.vimrc ~/.vimrc
 ln -s $SCRIPTPATH/tmux ~/.config
 ln -s $SCRIPTPATH/starship.toml ~/.config
+ln -s $SCRIPTPATH/git ~/.config
 
