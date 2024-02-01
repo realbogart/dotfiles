@@ -10,3 +10,5 @@
 	autocrlf = input
 [merge]
 	ff = only
+[rebase]
+	autoStash = true
