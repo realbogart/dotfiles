@@ -73,7 +73,11 @@ ZSH_THEME="robbyrussell"
 plugins=(
     git
     zsh-autosuggestions
+    zsh-vi-mode
 )
+
+ZVM_VI_INSERT_ESCAPE_BINDKEY=kj
+# bindkey '\C-e' edit-command-line
 
 source $ZSH/oh-my-zsh.sh
 
