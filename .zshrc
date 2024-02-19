@@ -1,9 +1,6 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
-# Path to your oh-my-zsh installation.
-export ZSH="$HOME/.oh-my-zsh"
-
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
@@ -79,8 +76,12 @@ plugins=(
 ZVM_VI_INSERT_ESCAPE_BINDKEY=kj
 # bindkey '\C-e' edit-command-line
 
-source $ZSH/oh-my-zsh.sh
+if [ ! -f /etc/NIXOS ]; then
+    export ZSH="$HOME/.oh-my-zsh"
+    setxkbmap -layout se -variant nodeadkeys -option terminate:ctrl_alt_bksp,ctrl:nocaps
+fi
 
+source $ZSH/oh-my-zsh.sh
 # User configuration
 
 # export MANPATH="/usr/local/man:$MANPATH"
@@ -118,6 +119,4 @@ export OKTA_USERNAME=johan.yngman
 export XDG_CONFIG_HOME=~/.config
 
 [ -f "$HOME/.ghcup/env" ] && source "$HOME/.ghcup/env" # ghcup-env
-
-setxkbmap -layout se -variant nodeadkeys -option terminate:ctrl_alt_bksp,ctrl:nocaps
 
