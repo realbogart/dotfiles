@@ -67,17 +67,18 @@ ZSH_THEME="robbyrussell"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(
-    git
-    zsh-autosuggestions
-    zsh-vi-mode
-)
-
 ZVM_VI_INSERT_ESCAPE_BINDKEY=kj
 # bindkey '\C-e' edit-command-line
 
 if [ ! -f /etc/NIXOS ]; then
     export ZSH="$HOME/.oh-my-zsh"
+
+    plugins=(
+        git
+        zsh-autosuggestions
+        zsh-vi-mode
+    )
+
     setxkbmap -layout se -variant nodeadkeys -option terminate:ctrl_alt_bksp,ctrl:nocaps
 fi
 
