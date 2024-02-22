@@ -79,10 +79,11 @@ if [ ! -f /etc/NIXOS ]; then
         zsh-vi-mode
     )
 
+    source $ZSH/oh-my-zsh.sh
+
     setxkbmap -layout se -variant nodeadkeys -option terminate:ctrl_alt_bksp,ctrl:nocaps
 fi
 
-source $ZSH/oh-my-zsh.sh
 # User configuration
 
 # export MANPATH="/usr/local/man:$MANPATH"
