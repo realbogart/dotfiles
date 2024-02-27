@@ -1,7 +1,11 @@
 live_config_reload = true
 
 [window]
-startup_mode = "Fullscreen"
+startup_mode = "Maximized"
+decorations = "None"
+
+[scrolling]
+history = 100000
 
 [[keyboard.bindings]]
 action = "Paste"
