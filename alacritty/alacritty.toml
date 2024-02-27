@@ -1,0 +1,9 @@
+live_config_reload = true
+
+[window]
+startup_mode = "Fullscreen"
+
+[[keyboard.bindings]]
+action = "Paste"
+key = "v"
+mods = "Control"
