@@ -1,12 +1,14 @@
+import = ["~/.config/alacritty/themes/omni.toml"]
+
 live_config_reload = true
 
 [window]
 startup_mode = "Maximized"
 decorations = "None"
 
-[colors.normal]
-green = "#00CC00"
-blue = "#0044EE"
+# [colors.normal]
+# green = "#00CC00"
+# blue = "#0044EE"
 
 [scrolling]
 history = 100000
