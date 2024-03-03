@@ -4,6 +4,10 @@ live_config_reload = true
 startup_mode = "Maximized"
 decorations = "None"
 
+[colors.normal]
+green = "#00CC00"
+blue = "#0044EE"
+
 [scrolling]
 history = 100000
 
