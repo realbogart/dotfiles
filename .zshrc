@@ -119,6 +119,7 @@ export CXX=clang++
 export EDITOR=nvim
 export OKTA_USERNAME=johan.yngman
 export XDG_CONFIG_HOME=~/.config
+export TERM=screen-256color
 
 [ -f "$HOME/.ghcup/env" ] && source "$HOME/.ghcup/env" # ghcup-env
 
