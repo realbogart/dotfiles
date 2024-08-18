@@ -11,7 +11,7 @@ decorations = "None"
 # blue = "#0044EE"
 
 [scrolling]
-history = 100000
+history = 10000
 
 [[keyboard.bindings]]
 action = "Paste"
