@@ -68,7 +68,7 @@ ZSH_THEME="robbyrussell"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 ZVM_VI_INSERT_ESCAPE_BINDKEY=kj
-# bindkey '\C-e' edit-command-line
+bindkey '\C-e' edit-command-line
 
 if [ ! -f /etc/NIXOS ]; then
     export ZSH="$HOME/.oh-my-zsh"
@@ -76,7 +76,7 @@ if [ ! -f /etc/NIXOS ]; then
     plugins=(
         git
         zsh-autosuggestions
-        zsh-vi-mode
+        # zsh-vi-mode
     )
 
     source $ZSH/oh-my-zsh.sh
