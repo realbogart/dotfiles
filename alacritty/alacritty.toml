@@ -9,6 +9,9 @@ decorations = "None"
 # green = "#00CC00"
 # blue = "#0044EE"
 
+# [colors.primary]
+# background = "#181818"
+
 [scrolling]
 history = 10000
 
