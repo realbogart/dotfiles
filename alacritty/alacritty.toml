@@ -1,6 +1,5 @@
-import = ["~/.config/alacritty/themes/omni.toml"]
-
-live_config_reload = true
+general.import = ["~/.config/alacritty/themes/tender.toml"]
+general.live_config_reload = true
 
 [window]
 startup_mode = "Maximized"
@@ -17,3 +16,71 @@ history = 10000
 action = "Paste"
 key = "v"
 mods = "Control"
+
+[font]
+
+size = 12.0
+
+[font.bold]
+family = "RobotoMono Nerd Font Mono"
+style = "Bold"
+
+[font.bold_italic]
+family = "RobotoMono Nerd Font Mono"
+style = "Bold Italic"
+
+[font.italic]
+family = "RobotoMono Nerd Font Mono"
+style = "Italic"
+
+[font.normal]
+family = "RobotoMono Nerd Font Mono"
+style = "Regular"
+
+# [font.bold]
+# family = "FiraMono Nerd Font Mono"
+# style = "Bold"
+#
+# [font.bold_italic]
+# family = "FiraMono Nerd Font Mono"
+# style = "Bold Italic"
+#
+# [font.italic]
+# family = "FiraMono Nerd Font Mono"
+# style = "Italic"
+#
+# [font.normal]
+# family = "FiraMono Nerd Font Mono"
+# style = "Regular"
+
+# [font.bold]
+# family = "0xProto Nerd Font Mono"
+# style = "Bold"
+#
+# [font.bold_italic]
+# family = "0xProto Nerd Font Mono"
+# style = "Bold Italic"
+#
+# [font.italic]
+# family = "0xProto Nerd Font Mono"
+# style = "Italic"
+#
+# [font.normal]
+# family = "0xProto Nerd Font Mono"
+# style = "Regular"
+
+# [font.bold]
+# family = "FiraCode Nerd Font Mono"
+# style = "Bold"
+#
+# [font.bold_italic]
+# family = "FiraCode Nerd Font Mono"
+# style = "Bold Italic"
+#
+# [font.italic]
+# family = "FiraCode Nerd Font Mono"
+# style = "Italic"
+#
+# [font.normal]
+# family = "FiraCode Nerd Font Mono"
+# style = "Regular"
