@@ -22,35 +22,35 @@ mods = "Control"
 size = 12.0
 
 [font.bold]
-family = "RobotoMono Nerd Font Mono"
+family = "FiraMono Nerd Font Mono"
 style = "Bold"
 
 [font.bold_italic]
-family = "RobotoMono Nerd Font Mono"
+family = "FiraMono Nerd Font Mono"
 style = "Bold Italic"
 
 [font.italic]
-family = "RobotoMono Nerd Font Mono"
+family = "FiraMono Nerd Font Mono"
 style = "Italic"
 
 [font.normal]
-family = "RobotoMono Nerd Font Mono"
+family = "FiraMono Nerd Font Mono"
 style = "Regular"
 
 # [font.bold]
-# family = "FiraMono Nerd Font Mono"
+# family = "RobotoMono Nerd Font Mono"
 # style = "Bold"
 #
 # [font.bold_italic]
-# family = "FiraMono Nerd Font Mono"
+# family = "RobotoMono Nerd Font Mono"
 # style = "Bold Italic"
 #
 # [font.italic]
-# family = "FiraMono Nerd Font Mono"
+# family = "RobotoMono Nerd Font Mono"
 # style = "Italic"
 #
 # [font.normal]
-# family = "FiraMono Nerd Font Mono"
+# family = "RobotoMono Nerd Font Mono"
 # style = "Regular"
 
 # [font.bold]
