@@ -7,7 +7,7 @@
 	recurse = true
 [core]
 	editor = nvim
-	autocrlf = input
+	autocrlf = false
 [merge]
 	ff = only
 [rebase]
