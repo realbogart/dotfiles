@@ -48,6 +48,8 @@ customKeys :: XConfig Layout -> [((KeyMask, KeySym), X ())]
 customKeys c =
   [ ((modm, xK_r), spawn "xmonad --recompile; xmonad --restart")
   , ((modm, xK_p), spawn "rofi -show drun || dmenu_run")
+  , ((modm, xK_space), pure ())
+  , ((modm, xK_odiaeresis), sendMessage NextLayout)
   , ((0, xK_Print), spawn "flameshot gui")
   , ((shiftMask, xK_Print), spawn "flameshot gui")
   , ((modm, xK_m), windows $ W.greedyView "1")
