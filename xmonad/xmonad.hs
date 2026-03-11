@@ -27,7 +27,7 @@ main = xmonad $ def
 
 customKeys :: XConfig Layout -> [((KeyMask, KeySym), X ())]
 customKeys c =
-  [ ((modm .|. shiftMask, xK_r), spawn "xmonad --recompile; xmonad --restart")
+  [ ((modm, xK_r), spawn "xmonad --recompile; xmonad --restart")
   , ((modm, xK_p), spawn "rofi -show drun || dmenu_run")
   , ((0, xK_Print), spawn "flameshot gui")
   , ((shiftMask, xK_Print), spawn "flameshot gui")
