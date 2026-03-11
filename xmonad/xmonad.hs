@@ -29,6 +29,8 @@ customKeys :: XConfig Layout -> [((KeyMask, KeySym), X ())]
 customKeys c =
   [ ((modm .|. shiftMask, xK_r), spawn "xmonad --recompile; xmonad --restart")
   , ((modm, xK_p), spawn "rofi -show drun || dmenu_run")
+  , ((0, xK_Print), spawn "flameshot gui")
+  , ((shiftMask, xK_Print), spawn "flameshot gui")
   , ((modm, xK_m), windows $ W.greedyView "1")
   , ((modm, xK_comma), windows $ W.greedyView "2")
   , ((modm, xK_period), windows $ W.greedyView "3")
