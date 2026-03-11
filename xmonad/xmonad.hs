@@ -52,7 +52,7 @@ customKeys c =
   , ((modm, xK_odiaeresis), spawn "rofi -show drun || dmenu_run")
   , ((mod1Mask, xK_Tab), toggleWS)
   , ((modm, xK_y), windows W.swapDown)
-  , ((modm, xK_space), pure ())
+  , ((modm, xK_space), spawn "/home/johan/dotfiles/xmonad/toggle-media.sh")
   , ((modm, xK_p), sendMessage NextLayout)
   , ((0, xK_Print), spawn "flameshot gui")
   , ((shiftMask, xK_Print), spawn "flameshot gui")
