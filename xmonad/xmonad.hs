@@ -1,4 +1,5 @@
 import XMonad
+import XMonad.Actions.CycleWS (toggleWS)
 import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppOutput, ppSep, ppTitle, shorten, xmobarColor, xmobarPP)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
 import XMonad.ManageHook (composeAll, (-->))
@@ -48,6 +49,7 @@ customKeys :: XConfig Layout -> [((KeyMask, KeySym), X ())]
 customKeys c =
   [ ((modm, xK_r), spawn "xmonad --recompile; xmonad --restart")
   , ((modm, xK_p), spawn "rofi -show drun || dmenu_run")
+  , ((mod1Mask, xK_Tab), toggleWS)
   , ((modm, xK_space), pure ())
   , ((modm, xK_odiaeresis), sendMessage NextLayout)
   , ((0, xK_Print), spawn "flameshot gui")
