@@ -1,33 +1,48 @@
 import XMonad
+import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppOutput, ppSep, ppTitle, shorten, xmobarColor, xmobarPP)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
 import XMonad.ManageHook (composeAll, (-->))
 import Data.Bits ((.|.))
 import qualified Data.Map as M
 import qualified XMonad.StackSet as W
+import XMonad.Util.Run (spawnPipe)
+import System.IO (hPutStrLn)
+import System.IO.Error (catchIOError)
 
 main :: IO ()
-main = xmonad . docks $ def
-  { terminal = "alacritty"
-  , borderWidth = 0
-  , modMask = mod4Mask
-  , startupHook = do
-      spawn "pgrep -x alacritty >/dev/null || alacritty"
-      spawn "pgrep -x brave >/dev/null || brave"
-      spawn "pkill -x xmobar >/dev/null 2>&1 || true; /run/current-system/sw/bin/xmobar --recompile /home/johan/dotfiles/xmonad/xmobarrc.hs >/tmp/xmobar.log 2>&1 &"
-      windows $ W.greedyView "4"
-      startupHook def
-  , manageHook =
-      composeAll
-        [ className =? "Alacritty" --> doShift "4"
-        , className =? "Brave-browser" --> doShift "5"
-        , className =? "Brave" --> doShift "5"
-        ]
-      <+> manageDocks
-      <+> manageHook def
-  , layoutHook = avoidStruts $ layoutHook def
-  , keys = \c ->
-      M.union (M.fromList (customKeys c)) (keys def c)
-  }
+main = do
+  xmproc <-
+    spawnPipe
+      "sh -c 'pkill -x xmobar >/dev/null 2>&1 || true; exec /run/current-system/sw/bin/xmobar /home/johan/dotfiles/xmonad/xmobarrc.hs'"
+  xmonad . docks $ def
+    { terminal = "alacritty"
+    , borderWidth = 0
+    , modMask = mod4Mask
+    , startupHook = do
+        spawn "pgrep -x alacritty >/dev/null || alacritty"
+        spawn "pgrep -x brave >/dev/null || brave"
+        windows $ W.greedyView "4"
+        startupHook def
+    , manageHook =
+        composeAll
+          [ className =? "Alacritty" --> doShift "4"
+          , className =? "Brave-browser" --> doShift "5"
+          , className =? "Brave" --> doShift "5"
+          ]
+        <+> manageDocks
+        <+> manageHook def
+    , layoutHook = avoidStruts $ layoutHook def
+    , logHook =
+        dynamicLogWithPP
+          xmobarPP
+            { ppOutput = \line -> catchIOError (hPutStrLn xmproc line) (\_ -> pure ())
+            , ppCurrent = xmobarColor "#ffc24b" ""
+            , ppTitle = xmobarColor "#b3deef" "" . shorten 70
+            , ppSep = "  |  "
+            }
+    , keys = \c ->
+        M.union (M.fromList (customKeys c)) (keys def c)
+    }
 
 customKeys :: XConfig Layout -> [((KeyMask, KeySym), X ())]
 customKeys c =

@@ -9,10 +9,11 @@ Config
   , allDesktops = True
   , persistent = True
   , commands =
-      [ Run Date "%Y-%m-%d" "date" 600
+      [ Run StdinReader
+      , Run Date "%Y-%m-%d" "date" 600
       , Run Date "%H:%M" "time" 10
       ]
   , sepChar = "%"
   , alignSep = "}{"
-  , template = "}{ <fc=#d3b987>%date%</fc> <fc=#eeeeee>%time%</fc> "
+  , template = " %StdinReader% }{ <fc=#d3b987>%date%</fc> <fc=#eeeeee>%time%</fc> "
   }
