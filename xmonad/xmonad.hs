@@ -1,4 +1,5 @@
 import XMonad
+import XMonad.ManageHook (composeAll, (-->))
 import Data.Bits ((.|.))
 import qualified Data.Map as M
 import qualified XMonad.StackSet as W
@@ -8,6 +9,18 @@ main = xmonad $ def
   { terminal = "alacritty"
   , borderWidth = 0
   , modMask = mod4Mask
+  , startupHook = do
+      spawn "pgrep -x alacritty >/dev/null || alacritty"
+      spawn "pgrep -x brave >/dev/null || brave"
+      windows $ W.greedyView "4"
+      startupHook def
+  , manageHook =
+      composeAll
+        [ className =? "Alacritty" --> doShift "4"
+        , className =? "Brave-browser" --> doShift "5"
+        , className =? "Brave" --> doShift "5"
+        ]
+      <+> manageHook def
   , keys = \c ->
       M.union (M.fromList (customKeys c)) (keys def c)
   }
@@ -15,6 +28,7 @@ main = xmonad $ def
 customKeys :: XConfig Layout -> [((KeyMask, KeySym), X ())]
 customKeys c =
   [ ((modm .|. shiftMask, xK_r), spawn "xmonad --recompile; xmonad --restart")
+  , ((modm, xK_p), spawn "rofi -show drun || dmenu_run")
   , ((modm, xK_m), windows $ W.greedyView "1")
   , ((modm, xK_comma), windows $ W.greedyView "2")
   , ((modm, xK_period), windows $ W.greedyView "3")
