@@ -6,7 +6,11 @@ import System.Taffybar.Widget
 
 main :: IO ()
 main = do
-  let clock = textClockNewWith defaultClockConfig
+  let clock =
+        textClockNewWith
+          defaultClockConfig
+            { clockFormatString = "%Y-%m-%d kl %H:%M"
+            }
 
       simpleConfig =
         defaultSimpleTaffyConfig
