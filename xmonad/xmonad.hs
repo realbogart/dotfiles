@@ -1,5 +1,6 @@
 import XMonad
 import XMonad.Actions.CycleWS (toggleWS)
+import XMonad.Actions.GridSelect (goToSelected)
 import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppOutput, ppSep, ppTitle, shorten, xmobarColor, xmobarPP)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
 import XMonad.ManageHook (composeAll, (-->))
@@ -48,10 +49,11 @@ main = do
 customKeys :: XConfig Layout -> [((KeyMask, KeySym), X ())]
 customKeys c =
   [ ((modm, xK_r), spawn "xmonad --recompile; xmonad --restart")
-  , ((modm, xK_p), spawn "rofi -show drun || dmenu_run")
+  , ((modm, xK_odiaeresis), spawn "rofi -show drun || dmenu_run")
   , ((mod1Mask, xK_Tab), toggleWS)
+  , ((modm, xK_y), windows W.swapDown)
   , ((modm, xK_space), pure ())
-  , ((modm, xK_odiaeresis), sendMessage NextLayout)
+  , ((modm, xK_p), sendMessage NextLayout)
   , ((0, xK_Print), spawn "flameshot gui")
   , ((shiftMask, xK_Print), spawn "flameshot gui")
   , ((modm, xK_m), windows $ W.greedyView "1")
@@ -61,7 +63,7 @@ customKeys c =
   , ((modm, xK_k), windows $ W.greedyView "5")
   , ((modm, xK_l), windows $ W.greedyView "6")
   , ((modm, xK_u), windows $ W.greedyView "7")
-  , ((modm, xK_i), windows $ W.greedyView "8")
+  , ((modm, xK_i), goToSelected def)
   , ((modm, xK_o), windows $ W.greedyView "9")
   , ((modm, xK_1), windows $ W.shift "1")
   , ((modm, xK_2), windows $ W.shift "2")
