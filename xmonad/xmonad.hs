@@ -13,7 +13,7 @@ main = xmonad . docks $ def
   , startupHook = do
       spawn "pgrep -x alacritty >/dev/null || alacritty"
       spawn "pgrep -x brave >/dev/null || brave"
-      spawn "pkill -x xmobar >/dev/null 2>&1 || true; /run/current-system/sw/bin/xmobar /home/johan/dotfiles/xmonad/xmobarrc >/tmp/xmobar.log 2>&1 &"
+      spawn "pkill -x xmobar >/dev/null 2>&1 || true; /run/current-system/sw/bin/xmobar --recompile /home/johan/dotfiles/xmonad/xmobarrc.hs >/tmp/xmobar.log 2>&1 &"
       windows $ W.greedyView "4"
       startupHook def
   , manageHook =
