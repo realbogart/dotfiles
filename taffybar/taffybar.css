@@ -1,0 +1,32 @@
+* {
+  font-family: "Monospace";
+  font-size: 11px;
+}
+
+.taffy-window * {
+  background-color: #0f111a;
+  color: #c8d3f5;
+}
+
+.workspace-content {
+  padding: 0 8px;
+}
+
+.workspace-label {
+  padding: 2px 8px;
+}
+
+.active {
+  color: #ffcc66;
+  font-weight: 700;
+}
+
+.graph {
+  min-width: 70px;
+  margin: 0 8px;
+}
+
+.layout-label,
+.clock-label {
+  padding: 2px 10px;
+}

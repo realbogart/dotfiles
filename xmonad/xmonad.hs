@@ -1,17 +1,19 @@
 import XMonad
+import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
 import XMonad.ManageHook (composeAll, (-->))
 import Data.Bits ((.|.))
 import qualified Data.Map as M
 import qualified XMonad.StackSet as W
 
 main :: IO ()
-main = xmonad $ def
+main = xmonad . docks $ def
   { terminal = "alacritty"
   , borderWidth = 0
   , modMask = mod4Mask
   , startupHook = do
       spawn "pgrep -x alacritty >/dev/null || alacritty"
       spawn "pgrep -x brave >/dev/null || brave"
+      spawn "command -v taffybar >/dev/null && (pkill -f '[t]affybar-linux-x86_64\\.taffybar-wrapped' >/dev/null 2>&1 || true; pkill -x taffybar >/dev/null 2>&1 || true; XDG_CONFIG_HOME=/home/johan/dotfiles taffybar >/tmp/taffybar.log 2>&1 &)"
       windows $ W.greedyView "4"
       startupHook def
   , manageHook =
@@ -20,7 +22,9 @@ main = xmonad $ def
         , className =? "Brave-browser" --> doShift "5"
         , className =? "Brave" --> doShift "5"
         ]
+      <+> manageDocks
       <+> manageHook def
+  , layoutHook = avoidStruts $ layoutHook def
   , keys = \c ->
       M.union (M.fromList (customKeys c)) (keys def c)
   }
