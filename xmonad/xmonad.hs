@@ -23,7 +23,6 @@ main = do
     , startupHook = do
         spawnOn "4" "sh -c 'pgrep -x alacritty >/dev/null || exec alacritty'"
         spawnOn "5" "sh -c 'pgrep -x brave >/dev/null || exec brave'"
-        spawnOn "6" "sh -c 'pgrep -f \"brave.*youtube\\.com\" >/dev/null || exec brave --new-window https://www.youtube.com'"
         windows $ W.greedyView "4"
         startupHook def
     , manageHook =
