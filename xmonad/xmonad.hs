@@ -3,6 +3,7 @@ import XMonad.Actions.CycleRecentWS (cycleRecentWS)
 import XMonad.Actions.GridSelect (goToSelected)
 import XMonad.Actions.SpawnOn (manageSpawn, spawnOn)
 import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppOutput, ppSep, ppTitle, shorten, xmobarColor, xmobarPP)
+import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
 import Data.Bits ((.|.))
 import qualified Data.Map as M
@@ -16,7 +17,7 @@ main = do
   xmproc <-
     spawnPipe
       "sh -c 'pkill -x xmobar >/dev/null 2>&1 || true; exec /run/current-system/sw/bin/xmobar /home/johan/dotfiles/xmonad/xmobarrc.hs'"
-  xmonad . docks $ def
+  xmonad . ewmhFullscreen . ewmh . docks $ def
     { terminal = "alacritty"
     , borderWidth = 0
     , modMask = mod4Mask
