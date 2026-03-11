@@ -1,5 +1,5 @@
 import XMonad
-import XMonad.Actions.CycleRecentWS (cycleRecentWS)
+import XMonad.Actions.CycleRecentWS (cycleRecentNonEmptyWS)
 import XMonad.Actions.GridSelect (goToSelected)
 import XMonad.Actions.SpawnOn (manageSpawn, spawnOn)
 import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppOutput, ppSep, ppTitle, shorten, xmobarColor, xmobarPP)
@@ -48,7 +48,7 @@ customKeys :: XConfig Layout -> [((KeyMask, KeySym), X ())]
 customKeys c =
   [ ((modm, xK_r), spawn "xmonad --recompile; xmonad --restart")
   , ((modm, xK_odiaeresis), spawn "rofi -show drun || dmenu_run")
-  , ((mod1Mask, xK_Tab), cycleRecentWS [xK_Alt_L, xK_Alt_R] xK_Tab xK_grave)
+  , ((mod1Mask, xK_Tab), cycleRecentNonEmptyWS [xK_Alt_L, xK_Alt_R] xK_Tab xK_grave)
   , ((modm, xK_y), windows W.swapDown)
   , ((modm, xK_space), spawn "/home/johan/dotfiles/xmonad/toggle-media.sh")
   , ((modm, xK_p), sendMessage NextLayout)
