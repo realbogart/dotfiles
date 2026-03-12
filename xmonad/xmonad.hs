@@ -43,10 +43,6 @@ main = do
               ]
           ]
         <+> composeAll
-          [ className =? c --> doShift "2"
-          | c <- ["spotify", "Spotify", "com.spotify.Client"]
-          ]
-        <+> composeAll
           [ className =? c --> doShift "1"
           | c <- ["btop", "Btop"]
           ]
@@ -85,7 +81,13 @@ customKeys c =
           "1"
           "alacritty --class btop,btop -e sh -lc \"exec btop\""
     )
-  , ((modm, xK_comma), windows $ W.greedyView "2")
+  , ( (modm, xK_comma)
+    , windows (W.greedyView "2")
+        >> ensureWindowOnWorkspace
+          ["spotify", "Spotify", "com.spotify.Client"]
+          "2"
+          "flatpak run com.spotify.Client"
+    )
   , ((modm, xK_period), windows $ W.greedyView "3")
   , ((modm, xK_j), windows (W.greedyView "4") >> ensureWindowOnWorkspace ["Alacritty"] "4" "alacritty")
   , ( (modm, xK_k)
@@ -128,6 +130,11 @@ autostartWorkspaceApps = do
       ["btop", "Btop"]
       "1"
       "alacritty --class btop,btop -e sh -lc \"exec btop\""
+  when (currentWs == "2") $
+    ensureWindowOnWorkspace
+      ["spotify", "Spotify", "com.spotify.Client"]
+      "2"
+      "flatpak run com.spotify.Client"
   when (currentWs == "4") $
     ensureWindowOnWorkspace ["Alacritty"] "4" "alacritty"
   when (currentWs == "5") $
