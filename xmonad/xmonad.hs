@@ -43,6 +43,10 @@ main = do
               , "im.riot.Riot"
               ]
           ]
+        <+> composeAll
+          [ className =? c --> doShift "2"
+          | c <- ["spotify", "Spotify", "com.spotify.Client"]
+          ]
         <+> manageHook def
     , layoutHook = avoidStruts $ layoutHook def
     , logHook =
