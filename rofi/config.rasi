@@ -1,0 +1,8 @@
+configuration {
+  show-icons: true;
+  display-drun: "Apps";
+  matching: "fuzzy";
+  sort: true;
+  case-smart: true;
+  font: "Monospace 12";
+}

@@ -1,0 +1,8 @@
+# Label<TAB>Command<TAB>Icon
+Firefox	firefox	firefox
+Brave	brave	brave-browser
+Terminal: Alacritty	alacritty	Alacritty
+Chat: Discord (Flatpak)	flatpak run com.discordapp.Discord	com.discordapp.Discord
+Flatpak: Install Discord	alacritty -e sh -lc "flatpak install -y flathub com.discordapp.Discord; printf '\nPress Enter to close...'; read -r _"	flatpak
+Flatpak: Update all	alacritty -e sh -lc "flatpak update -y; printf '\nPress Enter to close...'; read -r _"	flatpak
+Flatpak: List installed	alacritty -e sh -lc "flatpak list; printf '\nPress Enter to close...'; read -r _"	flatpak

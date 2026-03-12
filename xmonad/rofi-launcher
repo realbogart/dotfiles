@@ -1,0 +1,39 @@
+#!/usr/bin/env sh
+set -eu
+
+apps_file="${XDG_CONFIG_HOME:-$HOME/.config}/xmonad/launcher-apps.tsv"
+theme_file="${XDG_CONFIG_HOME:-$HOME/.config}/rofi/config.rasi"
+
+[ -f "$apps_file" ] || exit 1
+
+choice="$(
+  while IFS='	' read -r label _cmd icon || [ -n "${label:-}" ]; do
+    case "${label:-}" in
+      ''|\#*)
+        continue
+        ;;
+    esac
+
+    if [ -n "${icon:-}" ]; then
+      printf '%s\0icon\x1f%s\n' "$label" "$icon"
+    else
+      printf '%s\n' "$label"
+    fi
+  done < "$apps_file" | rofi -dmenu -i -show-icons -p "Apps" -theme "$theme_file"
+)"
+
+[ -n "$choice" ] || exit 0
+
+cmd="$(
+  awk -F '\t' -v wanted="$choice" '
+    /^[[:space:]]*$/ { next }
+    /^[[:space:]]*#/ { next }
+    $1 == wanted {
+      print $2
+      exit
+    }
+  ' "$apps_file"
+)"
+
+[ -n "$cmd" ] || exit 1
+exec sh -lc "$cmd"

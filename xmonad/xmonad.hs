@@ -5,7 +5,6 @@ import XMonad.Actions.SpawnOn (manageSpawn, spawnOn)
 import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppOutput, ppSep, ppTitle, shorten, xmobarColor, xmobarPP)
 import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
-import Data.Bits ((.|.))
 import qualified Data.Map as M
 import qualified XMonad.StackSet as W
 import XMonad.Util.Run (spawnPipe)
@@ -47,7 +46,7 @@ main = do
 customKeys :: XConfig Layout -> [((KeyMask, KeySym), X ())]
 customKeys c =
   [ ((modm, xK_r), spawn "xmonad --recompile; xmonad --restart")
-  , ((modm, xK_odiaeresis), spawn "rofi -show drun || dmenu_run")
+  , ((modm, xK_odiaeresis), spawn "/home/johan/.local/bin/rofi-launcher")
   , ((mod1Mask, xK_Tab), cycleRecentNonEmptyWS [xK_Alt_L, xK_Alt_R] xK_Tab xK_grave)
   , ((modm, xK_y), windows W.swapDown)
   , ((modm, xK_space), spawn "/home/johan/dotfiles/xmonad/toggle-media.sh")
