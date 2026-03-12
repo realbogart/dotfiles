@@ -29,6 +29,20 @@ main = do
     , manageHook =
         manageSpawn
         <+> manageDocks
+        <+> composeAll
+          [ className =? c --> doShift "3"
+          | c <-
+              [ "discord"
+              , "Discord"
+              , "com.discordapp.Discord"
+              , "signal"
+              , "Signal"
+              , "org.signal.Signal"
+              , "element"
+              , "Element"
+              , "im.riot.Riot"
+              ]
+          ]
         <+> manageHook def
     , layoutHook = avoidStruts $ layoutHook def
     , logHook =
