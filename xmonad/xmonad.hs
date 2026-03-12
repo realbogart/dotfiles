@@ -26,6 +26,8 @@ main = do
     , modMask = mod4Mask
     , startupHook = do
         windows $ W.greedyView "4"
+        XS.put (WorkspaceAutostartState True (Just "4"))
+        autostartWorkspaceApp "4"
         startupHook def
     , manageHook =
         manageSpawn
@@ -124,9 +126,9 @@ baseWorkspaceLabel ws = case ws of
 autostartWorkspaceApps :: X ()
 autostartWorkspaceApps = do
   currentWs <- gets (W.currentTag . windowset)
-  WorkspaceAutostartState lastWs <- XS.get
-  when (Just currentWs /= lastWs) $ do
-    XS.put (WorkspaceAutostartState (Just currentWs))
+  WorkspaceAutostartState initialized lastWs <- XS.get
+  when (initialized && Just currentWs /= lastWs) $ do
+    XS.put (WorkspaceAutostartState True (Just currentWs))
     autostartWorkspaceApp currentWs
 
 autostartWorkspaceApp :: WorkspaceId -> X ()
@@ -168,11 +170,11 @@ autostartWorkspaceApp currentWs = case currentWs of
       "flatpak run com.brave.Browser --new-window https://www.youtube.com"
   _ -> pure ()
 
-newtype WorkspaceAutostartState = WorkspaceAutostartState (Maybe WorkspaceId)
+data WorkspaceAutostartState = WorkspaceAutostartState Bool (Maybe WorkspaceId)
   deriving (Read, Show)
 
 instance ExtensionClass WorkspaceAutostartState where
-  initialValue = WorkspaceAutostartState Nothing
+  initialValue = WorkspaceAutostartState False Nothing
   extensionType = StateExtension
 
 ensureWindowOnWorkspace :: [String] -> WorkspaceId -> String -> X ()
