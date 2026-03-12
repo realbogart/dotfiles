@@ -52,9 +52,9 @@ main = do
               , ppVisible = xmobarColor "#b3deef" "" . wrap " " " "
               , ppHidden = xmobarColor "#f0f0f0" "" . wrap " " " "
               , ppHiddenNoWindows = xmobarColor "#7c6f64" "" . wrap " " " "
-              , ppLayout = xmobarColor "#d3869b" "" . formatLayoutName
-              , ppTitle = xmobarColor "#8ec07c" "" . shorten 140
-              , ppSep = "  |  "
+              , ppLayout = clickableLayout . xmobarColor "#d3869b" "" . formatLayoutName
+              , ppTitle = xmobarColor "#d3b987" "" . shorten 140
+              , ppSep = "  <fc=#7c6f64>·</fc>  "
               }
           dynamicLogWithPP clickable
     , keys = \c ->
@@ -125,6 +125,10 @@ formatLayoutName layout = case layout of
   "Mirror Tall" -> "row"
   "Full" -> "full"
   other -> other
+
+clickableLayout :: String -> String
+clickableLayout label =
+  "<action=`xdotool key Super_L+p` button=1>" ++ label ++ "</action>"
 
 autostartWorkspaceApps :: X ()
 autostartWorkspaceApps = do
