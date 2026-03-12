@@ -9,6 +9,7 @@ import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
 import qualified Data.Map as M
 import qualified XMonad.StackSet as W
+import qualified XMonad.Util.ExtensibleState as XS
 import XMonad.Util.Run (spawnPipe)
 import System.IO (hPutStrLn)
 import System.IO.Error (catchIOError)
@@ -76,27 +77,13 @@ customKeys c =
   , ((shiftMask, xK_Print), spawn "flameshot gui")
   , ( (modm, xK_m)
     , windows (W.greedyView "1")
-        >> ensureWindowOnWorkspace
-          ["btop", "Btop"]
-          "1"
-          "alacritty --class btop,btop -e sh -lc \"exec btop\""
     )
   , ( (modm, xK_comma)
     , windows (W.greedyView "2")
-        >> ensureWindowOnWorkspace
-          ["spotify", "Spotify", "com.spotify.Client"]
-          "2"
-          "flatpak run com.spotify.Client"
     )
   , ((modm, xK_period), windows $ W.greedyView "3")
-  , ((modm, xK_j), windows (W.greedyView "4") >> ensureWindowOnWorkspace ["Alacritty"] "4" "alacritty")
-  , ( (modm, xK_k)
-    , windows (W.greedyView "5")
-        >> ensureWindowOnWorkspace
-          ["Brave-browser", "brave-browser", "Brave Browser", "com.brave.Browser"]
-          "5"
-          "flatpak run com.brave.Browser"
-    )
+  , ((modm, xK_j), windows $ W.greedyView "4")
+  , ((modm, xK_k), windows $ W.greedyView "5")
   , ((modm, xK_l), windows $ W.greedyView "6")
   , ((modm, xK_u), sendMessage Shrink)
   , ((modm, xK_i), goToSelected def)
@@ -125,23 +112,38 @@ workspaceLabel ws = case ws of
 autostartWorkspaceApps :: X ()
 autostartWorkspaceApps = do
   currentWs <- gets (W.currentTag . windowset)
-  when (currentWs == "1") $
+  WorkspaceAutostartState lastWs <- XS.get
+  when (Just currentWs /= lastWs) $ do
+    XS.put (WorkspaceAutostartState (Just currentWs))
+    autostartWorkspaceApp currentWs
+
+autostartWorkspaceApp :: WorkspaceId -> X ()
+autostartWorkspaceApp currentWs = case currentWs of
+  "1" ->
     ensureWindowOnWorkspace
       ["btop", "Btop"]
       "1"
       "alacritty --class btop,btop -e sh -lc \"exec btop\""
-  when (currentWs == "2") $
+  "2" ->
     ensureWindowOnWorkspace
       ["spotify", "Spotify", "com.spotify.Client"]
       "2"
       "flatpak run com.spotify.Client"
-  when (currentWs == "4") $
+  "4" ->
     ensureWindowOnWorkspace ["Alacritty"] "4" "alacritty"
-  when (currentWs == "5") $
+  "5" ->
     ensureWindowOnWorkspace
       ["Brave-browser", "brave-browser", "Brave Browser", "com.brave.Browser"]
       "5"
       "flatpak run com.brave.Browser"
+  _ -> pure ()
+
+newtype WorkspaceAutostartState = WorkspaceAutostartState (Maybe WorkspaceId)
+  deriving (Read, Show)
+
+instance ExtensionClass WorkspaceAutostartState where
+  initialValue = WorkspaceAutostartState Nothing
+  extensionType = StateExtension
 
 ensureWindowOnWorkspace :: [String] -> WorkspaceId -> String -> X ()
 ensureWindowOnWorkspace classes targetWs cmd = do
