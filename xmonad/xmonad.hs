@@ -58,6 +58,7 @@ main = do
             , ppCurrent = xmobarColor "#282828" "#ffc24b" . wrap " " " " . workspaceLabel
             , ppVisible = xmobarColor "#b3deef" "" . wrap " " " " . workspaceLabel
             , ppHidden = xmobarColor "#f0f0f0" "" . wrap " " " " . workspaceLabel
+            , ppHiddenNoWindows = xmobarColor "#7c6f64" "" . wrap " " " " . workspaceLabel
             , ppTitle = xmobarColor "#b3deef" "" . shorten 70
             , ppSep = "  |  "
             }
@@ -129,6 +130,19 @@ autostartWorkspaceApp currentWs = case currentWs of
       ["spotify", "Spotify", "com.spotify.Client"]
       "2"
       "flatpak run com.spotify.Client"
+  "3" -> do
+    ensureWindowOnWorkspace
+      ["discord", "Discord", "com.discordapp.Discord"]
+      "3"
+      "flatpak run com.discordapp.Discord"
+    ensureWindowOnWorkspace
+      ["signal", "Signal", "org.signal.Signal"]
+      "3"
+      "flatpak run org.signal.Signal"
+    ensureWindowOnWorkspace
+      ["element", "Element", "im.riot.Riot"]
+      "3"
+      "flatpak run im.riot.Riot"
   "4" ->
     ensureWindowOnWorkspace ["Alacritty"] "4" "alacritty"
   "5" ->
