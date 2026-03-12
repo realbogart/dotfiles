@@ -61,7 +61,7 @@ main = do
               , ppVisible = xmobarColor "#b3deef" "" . wrap " " " "
               , ppHidden = xmobarColor "#f0f0f0" "" . wrap " " " "
               , ppHiddenNoWindows = xmobarColor "#7c6f64" "" . wrap " " " "
-              , ppTitle = xmobarColor "#b3deef" "" . shorten 70
+              , ppTitle = xmobarColor "#b3deef" "" . shorten 140
               , ppSep = "  |  "
               }
           dynamicLogWithPP clickable
