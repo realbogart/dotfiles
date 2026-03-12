@@ -5,7 +5,7 @@ import XMonad.Actions.SpawnOn (manageSpawn, spawnOn)
 import Control.Monad (unless, when)
 import Data.Char (chr)
 import Data.List (find)
-import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppHidden, ppHiddenNoWindows, ppOutput, ppRename, ppSep, ppTitle, ppVisible, shorten, wrap, xmobarColor, xmobarPP)
+import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppHidden, ppHiddenNoWindows, ppLayout, ppOutput, ppRename, ppSep, ppTitle, ppVisible, shorten, wrap, xmobarColor, xmobarPP)
 import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
 import qualified Data.Map as M
@@ -33,24 +33,6 @@ main = do
     , manageHook =
         manageSpawn
         <+> manageDocks
-        <+> composeAll
-          [ className =? c --> doShift "3"
-          | c <-
-              [ "discord"
-              , "Discord"
-              , "com.discordapp.Discord"
-              , "signal"
-              , "Signal"
-              , "org.signal.Signal"
-              , "element"
-              , "Element"
-              , "im.riot.Riot"
-              ]
-          ]
-        <+> composeAll
-          [ className =? c --> doShift "1"
-          | c <- ["btop", "Btop"]
-          ]
         <+> manageHook def
     , layoutHook = avoidStruts $ layoutHook def
     , logHook =
@@ -64,7 +46,8 @@ main = do
               , ppVisible = xmobarColor "#b3deef" "" . wrap " " " "
               , ppHidden = xmobarColor "#f0f0f0" "" . wrap " " " "
               , ppHiddenNoWindows = xmobarColor "#7c6f64" "" . wrap " " " "
-              , ppTitle = xmobarColor "#b3deef" "" . shorten 140
+              , ppLayout = xmobarColor "#d3869b" "" . formatLayoutName
+              , ppTitle = xmobarColor "#8ec07c" "" . shorten 140
               , ppSep = "  |  "
               }
           dynamicLogWithPP clickable
@@ -129,6 +112,13 @@ workspaceLabel n iconCode label = n ++ " " ++ label
 
 xmobarIcon :: Int -> String
 xmobarIcon iconCode = "<fn=1>" ++ [chr iconCode] ++ "</fn>"
+
+formatLayoutName :: String -> String
+formatLayoutName layout = case layout of
+  "Tall" -> "stack"
+  "Mirror Tall" -> "row"
+  "Full" -> "full"
+  other -> other
 
 autostartWorkspaceApps :: X ()
 autostartWorkspaceApps = do
