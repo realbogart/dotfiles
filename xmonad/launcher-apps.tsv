@@ -1,5 +1,7 @@
 # Label<TAB>Command<TAB>Icon
+# :setlocal noexpandtab
 Terminal: Alacritty	alacritty	Alacritty
+btop	alacritty --class btop,btop -e sh -lc "btop"	Alacritty
 Brave	flatpak run com.brave.Browser	com.brave.Browser
 Firefox	flatpak run org.mozilla.firefox	org.mozilla.firefox
 Discord	flatpak run com.discordapp.Discord	com.discordapp.Discord

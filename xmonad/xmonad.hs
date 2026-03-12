@@ -2,6 +2,8 @@ import XMonad
 import XMonad.Actions.CycleRecentWS (cycleRecentNonEmptyWS)
 import XMonad.Actions.GridSelect (goToSelected)
 import XMonad.Actions.SpawnOn (manageSpawn, spawnOn)
+import Control.Monad (unless, when)
+import Data.List (find)
 import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppHidden, ppHiddenNoWindows, ppOutput, ppSep, ppTitle, ppVisible, shorten, wrap, xmobarColor, xmobarPP)
 import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
@@ -21,9 +23,6 @@ main = do
     , borderWidth = 0
     , modMask = mod4Mask
     , startupHook = do
-        spawnOn "4" "sh -c 'pgrep -x alacritty >/dev/null || exec alacritty'"
-        spawnOn "5" "sh -c 'pgrep -x brave >/dev/null || exec flatpak run com.brave.Browser'"
-        -- spawn "sh -c 'pgrep -x xbanish >/dev/null || exec xbanishf"
         windows $ W.greedyView "4"
         startupHook def
     , manageHook =
@@ -47,9 +46,15 @@ main = do
           [ className =? c --> doShift "2"
           | c <- ["spotify", "Spotify", "com.spotify.Client"]
           ]
+        <+> composeAll
+          [ className =? c --> doShift "1"
+          | c <- ["btop", "Btop"]
+          ]
         <+> manageHook def
     , layoutHook = avoidStruts $ layoutHook def
     , logHook =
+        autostartWorkspaceApps
+        >> 
         dynamicLogWithPP
           xmobarPP
             { ppOutput = \line -> catchIOError (hPutStrLn xmproc line) (\_ -> pure ())
@@ -73,11 +78,23 @@ customKeys c =
   , ((modm, xK_p), sendMessage NextLayout)
   , ((0, xK_Print), spawn "flameshot gui")
   , ((shiftMask, xK_Print), spawn "flameshot gui")
-  , ((modm, xK_m), windows $ W.greedyView "1")
+  , ( (modm, xK_m)
+    , windows (W.greedyView "1")
+        >> ensureWindowOnWorkspace
+          ["btop", "Btop"]
+          "1"
+          "alacritty --class btop,btop -e sh -lc \"exec btop\""
+    )
   , ((modm, xK_comma), windows $ W.greedyView "2")
   , ((modm, xK_period), windows $ W.greedyView "3")
-  , ((modm, xK_j), windows $ W.greedyView "4")
-  , ((modm, xK_k), windows $ W.greedyView "5")
+  , ((modm, xK_j), windows (W.greedyView "4") >> ensureWindowOnWorkspace ["Alacritty"] "4" "alacritty")
+  , ( (modm, xK_k)
+    , windows (W.greedyView "5")
+        >> ensureWindowOnWorkspace
+          ["Brave-browser", "brave-browser", "Brave Browser", "com.brave.Browser"]
+          "5"
+          "flatpak run com.brave.Browser"
+    )
   , ((modm, xK_l), windows $ W.greedyView "6")
   , ((modm, xK_u), sendMessage Shrink)
   , ((modm, xK_i), goToSelected def)
@@ -102,3 +119,33 @@ workspaceLabel ws = case ws of
   "5" -> "5:web"
   "6" -> "6:misc"
   _ -> ws
+
+autostartWorkspaceApps :: X ()
+autostartWorkspaceApps = do
+  currentWs <- gets (W.currentTag . windowset)
+  when (currentWs == "1") $
+    ensureWindowOnWorkspace
+      ["btop", "Btop"]
+      "1"
+      "alacritty --class btop,btop -e sh -lc \"exec btop\""
+  when (currentWs == "4") $
+    ensureWindowOnWorkspace ["Alacritty"] "4" "alacritty"
+  when (currentWs == "5") $
+    ensureWindowOnWorkspace
+      ["Brave-browser", "brave-browser", "Brave Browser", "com.brave.Browser"]
+      "5"
+      "flatpak run com.brave.Browser"
+
+ensureWindowOnWorkspace :: [String] -> WorkspaceId -> String -> X ()
+ensureWindowOnWorkspace classes targetWs cmd = do
+  hasWindow <- hasWindowClassOnWorkspace classes targetWs
+  unless hasWindow $
+    spawnOn targetWs cmd
+
+hasWindowClassOnWorkspace :: [String] -> WorkspaceId -> X Bool
+hasWindowClassOnWorkspace names targetWs = withWindowSet $ \ws -> do
+  let wsWindows = case find ((== targetWs) . W.tag) (W.workspaces ws) of
+        Just w -> W.integrate' (W.stack w)
+        Nothing -> []
+  classes <- mapM (runQuery className) wsWindows
+  pure (any (`elem` names) classes)
