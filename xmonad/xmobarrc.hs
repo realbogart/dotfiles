@@ -1,6 +1,6 @@
 Config
   { font = "FiraMono Nerd Font Mono 12"
-  , additionalFonts = []
+  , additionalFonts = ["FiraMono Nerd Font Mono 12"]
   , dpi = 120
   , bgColor = "#282828"
   , fgColor = "#b3deef"

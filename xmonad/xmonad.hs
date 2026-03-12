@@ -3,6 +3,7 @@ import XMonad.Actions.CycleRecentWS (cycleRecentNonEmptyWS)
 import XMonad.Actions.GridSelect (goToSelected)
 import XMonad.Actions.SpawnOn (manageSpawn, spawnOn)
 import Control.Monad (unless, when)
+import Data.Char (chr)
 import Data.List (find)
 import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppHidden, ppHiddenNoWindows, ppOutput, ppRename, ppSep, ppTitle, ppVisible, shorten, wrap, xmobarColor, xmobarPP)
 import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
@@ -112,16 +113,22 @@ customKeys c =
 
 baseWorkspaceLabel :: WorkspaceId -> String
 baseWorkspaceLabel ws = case ws of
-  "1" -> "1:btop"
-  "2" -> "2:spotify"
-  "3" -> "3:chats"
-  "4" -> "4:tmux"
-  "5" -> "5:web"
-  "6" -> "6:youtube"
-  "7" -> "7:misc"
-  "8" -> "8:misc"
-  "9" -> "9:misc"
+  "1" -> workspaceLabel "1" 0xf080 "btop"
+  "2" -> workspaceLabel "2" 0xf1bc "spotify"
+  "3" -> workspaceLabel "3" 0xf086 "chats"
+  "4" -> workspaceLabel "4" 0xf120 "tmux"
+  "5" -> workspaceLabel "5" 0xf0ac "web"
+  "6" -> workspaceLabel "6" 0xf16a "youtube"
+  "7" -> workspaceLabel "7" 0xf07b "misc"
+  "8" -> workspaceLabel "8" 0xf07b "misc"
+  "9" -> workspaceLabel "9" 0xf07b "misc"
   _ -> ws
+
+workspaceLabel :: String -> Int -> String -> String
+workspaceLabel n iconCode label = n ++ " " ++ label
+
+xmobarIcon :: Int -> String
+xmobarIcon iconCode = "<fn=1>" ++ [chr iconCode] ++ "</fn>"
 
 autostartWorkspaceApps :: X ()
 autostartWorkspaceApps = do
