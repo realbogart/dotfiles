@@ -1,0 +1,36 @@
+[global]
+font = FiraMono Nerd Font Mono 12
+markup = full
+format = <b>%s</b>\n%b
+sort = yes
+word_wrap = yes
+follow = mouse
+width = 360
+height = 160
+origin = top-right
+offset = 16x16
+padding = 12
+horizontal_padding = 12
+frame_width = 2
+separator_height = 2
+corner_radius = 0
+show_age_threshold = 60
+idle_threshold = 120
+
+[urgency_low]
+background = "#282828"
+foreground = "#b3deef"
+frame_color = "#7c6f64"
+timeout = 3
+
+[urgency_normal]
+background = "#282828"
+foreground = "#f0f0f0"
+frame_color = "#ffc24b"
+timeout = 6
+
+[urgency_critical]
+background = "#282828"
+foreground = "#fb4934"
+frame_color = "#fb4934"
+timeout = 0
