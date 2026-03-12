@@ -4,12 +4,13 @@ import XMonad.Actions.GridSelect (goToSelected)
 import XMonad.Actions.SpawnOn (manageSpawn, spawnOn)
 import Control.Monad (unless, when)
 import Data.List (find)
-import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppHidden, ppHiddenNoWindows, ppOutput, ppSep, ppTitle, ppVisible, shorten, wrap, xmobarColor, xmobarPP)
+import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppHidden, ppHiddenNoWindows, ppOutput, ppRename, ppSep, ppTitle, ppVisible, shorten, wrap, xmobarColor, xmobarPP)
 import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
 import qualified Data.Map as M
 import qualified XMonad.StackSet as W
 import qualified XMonad.Util.ExtensibleState as XS
+import XMonad.Util.ClickableWorkspaces (clickablePP)
 import XMonad.Util.Run (spawnPipe)
 import System.IO (hPutStrLn)
 import System.IO.Error (catchIOError)
@@ -51,17 +52,19 @@ main = do
     , layoutHook = avoidStruts $ layoutHook def
     , logHook =
         autostartWorkspaceApps
-        >> 
-        dynamicLogWithPP
-          xmobarPP
-            { ppOutput = \line -> catchIOError (hPutStrLn xmproc line) (\_ -> pure ())
-            , ppCurrent = xmobarColor "#282828" "#ffc24b" . wrap " " " " . workspaceLabel
-            , ppVisible = xmobarColor "#b3deef" "" . wrap " " " " . workspaceLabel
-            , ppHidden = xmobarColor "#f0f0f0" "" . wrap " " " " . workspaceLabel
-            , ppHiddenNoWindows = xmobarColor "#7c6f64" "" . wrap " " " " . workspaceLabel
-            , ppTitle = xmobarColor "#b3deef" "" . shorten 70
-            , ppSep = "  |  "
-            }
+        >> do
+          clickable <- clickablePP $
+            xmobarPP
+              { ppOutput = \line -> catchIOError (hPutStrLn xmproc line) (\_ -> pure ())
+              , ppRename = \_ ws -> baseWorkspaceLabel (W.tag ws)
+              , ppCurrent = xmobarColor "#282828" "#ffc24b" . wrap " " " "
+              , ppVisible = xmobarColor "#b3deef" "" . wrap " " " "
+              , ppHidden = xmobarColor "#f0f0f0" "" . wrap " " " "
+              , ppHiddenNoWindows = xmobarColor "#7c6f64" "" . wrap " " " "
+              , ppTitle = xmobarColor "#b3deef" "" . shorten 70
+              , ppSep = "  |  "
+              }
+          dynamicLogWithPP clickable
     , keys = \c ->
         M.union (M.fromList (customKeys c)) (keys def c)
     }
@@ -105,8 +108,8 @@ customKeys c =
   where
     modm = modMask c
 
-workspaceLabel :: String -> String
-workspaceLabel ws = case ws of
+baseWorkspaceLabel :: WorkspaceId -> String
+baseWorkspaceLabel ws = case ws of
   "1" -> "1:btop"
   "2" -> "2:spotify"
   "3" -> "3:chats"
