@@ -2,7 +2,7 @@ import XMonad
 import XMonad.Actions.CycleRecentWS (cycleRecentNonEmptyWS)
 import XMonad.Actions.GridSelect (goToSelected)
 import XMonad.Actions.SpawnOn (manageSpawn, spawnOn)
-import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppOutput, ppSep, ppTitle, shorten, xmobarColor, xmobarPP)
+import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppHidden, ppHiddenNoWindows, ppOutput, ppSep, ppTitle, ppVisible, shorten, wrap, xmobarColor, xmobarPP)
 import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
 import qualified Data.Map as M
@@ -53,7 +53,9 @@ main = do
         dynamicLogWithPP
           xmobarPP
             { ppOutput = \line -> catchIOError (hPutStrLn xmproc line) (\_ -> pure ())
-            , ppCurrent = xmobarColor "#ffc24b" ""
+            , ppCurrent = xmobarColor "#282828" "#ffc24b" . wrap " " " " . workspaceLabel
+            , ppVisible = xmobarColor "#b3deef" "" . wrap " " " " . workspaceLabel
+            , ppHidden = xmobarColor "#f0f0f0" "" . wrap " " " " . workspaceLabel
             , ppTitle = xmobarColor "#b3deef" "" . shorten 70
             , ppSep = "  |  "
             }
@@ -90,3 +92,13 @@ customKeys c =
   ]
   where
     modm = modMask c
+
+workspaceLabel :: String -> String
+workspaceLabel ws = case ws of
+  "1" -> "1:btop"
+  "2" -> "2:spotify"
+  "3" -> "3:chats"
+  "4" -> "4:tmux"
+  "5" -> "5:web"
+  "6" -> "6:misc"
+  _ -> ws
