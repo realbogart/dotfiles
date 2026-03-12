@@ -86,9 +86,11 @@ customKeys c =
   , ((modm, xK_j), windows $ W.greedyView "4")
   , ((modm, xK_k), windows $ W.greedyView "5")
   , ((modm, xK_l), windows $ W.greedyView "6")
-  , ((modm, xK_u), sendMessage Shrink)
-  , ((modm, xK_i), goToSelected def)
-  , ((modm, xK_o), sendMessage Expand)
+  , ((modm, xK_u), windows $ W.greedyView "7")
+  , ((modm, xK_i), windows $ W.greedyView "8")
+  , ((modm, xK_o), windows $ W.greedyView "9")
+  , ((modm, xK_h), sendMessage Shrink)
+  , ((modm, xK_adiaeresis), sendMessage Expand)
   , ((modm, xK_n), kill)
   , ((modm, xK_1), windows $ W.shift "1")
   , ((modm, xK_2), windows $ W.shift "2")
@@ -96,6 +98,9 @@ customKeys c =
   , ((modm, xK_4), windows $ W.shift "4")
   , ((modm, xK_5), windows $ W.shift "5")
   , ((modm, xK_6), windows $ W.shift "6")
+  , ((modm, xK_7), windows $ W.shift "7")
+  , ((modm, xK_8), windows $ W.shift "8")
+  , ((modm, xK_9), windows $ W.shift "9")
   ]
   where
     modm = modMask c
@@ -107,7 +112,10 @@ workspaceLabel ws = case ws of
   "3" -> "3:chats"
   "4" -> "4:tmux"
   "5" -> "5:web"
-  "6" -> "6:misc"
+  "6" -> "6:youtube"
+  "7" -> "7:misc"
+  "8" -> "8:misc"
+  "9" -> "9:misc"
   _ -> ws
 
 autostartWorkspaceApps :: X ()
