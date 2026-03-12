@@ -3,6 +3,7 @@ set -eu
 
 apps_file="${XDG_CONFIG_HOME:-$HOME/.config}/xmonad/launcher-apps.tsv"
 theme_file="${XDG_CONFIG_HOME:-$HOME/.config}/rofi/config.rasi"
+icon_dir="${XDG_CONFIG_HOME:-$HOME/.config}/rofi/icons"
 
 [ -f "$apps_file" ] || exit 1
 
@@ -15,7 +16,13 @@ choice="$(
     esac
 
     if [ -n "${icon:-}" ]; then
-      printf '%s\0icon\x1f%s\n' "$label" "$icon"
+      icon_value="$icon"
+      if [ -f "$icon_dir/$icon.svg" ]; then
+        icon_value="$icon_dir/$icon.svg"
+      elif [ -f "$icon_dir/$icon.png" ]; then
+        icon_value="$icon_dir/$icon.png"
+      fi
+      printf '%s\0icon\x1f%s\n' "$label" "$icon_value"
     else
       printf '%s\n' "$label"
     fi
