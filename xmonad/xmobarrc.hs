@@ -15,5 +15,5 @@ Config
       ]
   , sepChar = "%"
   , alignSep = "}{"
-  , template = " %UnsafeStdinReader% }{ <fc=#d3b987>%date%</fc> <fc=#eeeeee>%time%</fc> "
+  , template = " %UnsafeStdinReader% }{ <fc=#d3b987>%date%</fc> <fc=#7c6f64>·</fc> <fc=#eeeeee>%time%</fc> "
   }
