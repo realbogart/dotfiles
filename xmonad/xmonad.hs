@@ -1,6 +1,7 @@
 import XMonad
 import XMonad.Actions.CycleRecentWS (cycleRecentNonEmptyWS)
 import XMonad.Actions.GridSelect (goToSelected)
+import XMonad.Actions.RotSlaves (rotAllDown)
 import XMonad.Actions.SpawnOn (manageSpawn, spawnOn)
 import Control.Monad (unless, when)
 import Data.Char (chr)
@@ -66,7 +67,7 @@ customKeys c =
   [ ((modm, xK_r), spawn "xmonad --recompile; xmonad --restart")
   , ((modm, xK_odiaeresis), spawn "/home/johan/.local/bin/rofi-launcher")
   , ((mod1Mask, xK_Tab), cycleRecentNonEmptyWS [xK_Alt_L, xK_Alt_R] xK_Tab xK_grave)
-  , ((modm, xK_y), windows W.swapDown)
+  , ((modm, xK_y), rotAllDown)
   , ((modm, xK_space), spawn "/home/johan/dotfiles/xmonad/toggle-media.sh")
   , ((modm, xK_p), sendMessage NextLayout)
   , ((0, xK_Print), spawn "flameshot gui")
