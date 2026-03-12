@@ -158,6 +158,11 @@ autostartWorkspaceApp currentWs = case currentWs of
       ["Brave-browser", "brave-browser", "Brave Browser", "com.brave.Browser"]
       "5"
       "flatpak run com.brave.Browser"
+  "6" ->
+    ensureWindowOnWorkspace
+      ["Brave-browser", "brave-browser", "Brave Browser", "com.brave.Browser"]
+      "6"
+      "flatpak run com.brave.Browser --new-window https://www.youtube.com"
   _ -> pure ()
 
 newtype WorkspaceAutostartState = WorkspaceAutostartState (Maybe WorkspaceId)
