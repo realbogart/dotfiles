@@ -35,6 +35,12 @@ main = do
         <+> manageDocks
         <+> manageHook def
     , layoutHook = avoidStruts $ layoutHook def
+    , mouseBindings = \XConfig {XMonad.modMask = modm} ->
+        M.fromList
+          [ ((modm, button1), \w -> focus w >> mouseMoveWindow w >> windows W.shiftMaster)
+          , ((modm, button2), \w -> focus w >> kill)
+          , ((modm, button3), \w -> focus w >> mouseResizeWindow w >> windows W.shiftMaster)
+          ]
     , logHook =
         autostartWorkspaceApps
         >> do
