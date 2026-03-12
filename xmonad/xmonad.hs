@@ -69,6 +69,8 @@ customKeys c =
   , ((mod1Mask, xK_Tab), cycleRecentNonEmptyWS [xK_Alt_L, xK_Alt_R] xK_Tab xK_grave)
   , ((modm, xK_y), rotAllDown)
   , ((modm, xK_space), spawn "/home/johan/dotfiles/xmonad/toggle-media.sh")
+  , ((modm .|. shiftMask, xK_space), spawn "/run/wrappers/bin/slock")
+  , ((controlMask .|. mod1Mask, xK_Delete), spawn "/run/wrappers/bin/slock")
   , ((modm, xK_p), sendMessage NextLayout)
   , ((0, xK_Print), spawn "flameshot gui")
   , ((shiftMask, xK_Print), spawn "flameshot gui")
