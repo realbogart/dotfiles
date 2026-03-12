@@ -22,7 +22,7 @@ main = do
     , modMask = mod4Mask
     , startupHook = do
         spawnOn "4" "sh -c 'pgrep -x alacritty >/dev/null || exec alacritty'"
-        spawnOn "5" "sh -c 'pgrep -x brave >/dev/null || exec brave'"
+        spawnOn "5" "sh -c 'pgrep -x brave >/dev/null || exec flatpak run com.brave.Browser'"
         -- spawn "sh -c 'pgrep -x xbanish >/dev/null || exec xbanishf"
         windows $ W.greedyView "4"
         startupHook def

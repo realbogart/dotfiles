@@ -1,7 +1,8 @@
 # Label<TAB>Command<TAB>Icon
 Terminal: Alacritty	alacritty	Alacritty
-Brave	brave	brave-browser
-Firefox	firefox	firefox
+Brave	flatpak run com.brave.Browser	com.brave.Browser
+Firefox	flatpak run org.mozilla.firefox	org.mozilla.firefox
 Discord	flatpak run com.discordapp.Discord	com.discordapp.Discord
+Spotify	flatpak run com.spotify.Client	com.spotify.Client
 Flatpak: Update all	alacritty -e sh -lc "flatpak update -y; printf '\nPress Enter to close...'; read -r _"	flatpak-update
 Flatpak: List installed	alacritty -e sh -lc "flatpak list; printf '\nPress Enter to close...'; read -r _"	flatpak-list
