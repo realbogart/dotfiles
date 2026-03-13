@@ -96,7 +96,7 @@ customKeys c =
   , ((modm, xK_o), windows $ W.greedyView "9")
   , ((modm, xK_h), sendMessage Shrink)
   , ((modm, xK_adiaeresis), sendMessage Expand)
-  , ((modm, xK_n), kill)
+  , ((modm, xK_0), kill)
   , ((modm, xK_1), windows $ W.shift "1")
   , ((modm, xK_2), windows $ W.shift "2")
   , ((modm, xK_3), windows $ W.shift "3")
