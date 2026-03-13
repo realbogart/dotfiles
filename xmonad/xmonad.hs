@@ -33,6 +33,7 @@ main = do
         startupHook def
     , manageHook =
         manageSpawn
+        <+> chatClientManageHook
         <+> manageDocks
         <+> manageHook def
     , layoutHook = avoidStruts $ layoutHook def
@@ -153,19 +154,8 @@ autostartWorkspaceApp currentWs = case currentWs of
       ["spotify", "Spotify", "com.spotify.Client"]
       "2"
       "flatpak run com.spotify.Client"
-  "3" -> do
-    ensureWindowOnWorkspace
-      ["discord", "Discord", "com.discordapp.Discord"]
-      "3"
-      "flatpak run com.discordapp.Discord"
-    ensureWindowOnWorkspace
-      ["signal", "Signal", "org.signal.Signal"]
-      "3"
-      "flatpak run org.signal.Signal"
-    ensureWindowOnWorkspace
-      ["element", "Element", "im.riot.Riot"]
-      "3"
-      "flatpak run im.riot.Riot"
+  "3" ->
+    pure ()
   "4" ->
     ensureWindowOnWorkspace ["Alacritty"] "4" "alacritty"
   "5" ->
@@ -186,6 +176,23 @@ data WorkspaceAutostartState = WorkspaceAutostartState Bool (Maybe WorkspaceId)
 instance ExtensionClass WorkspaceAutostartState where
   initialValue = WorkspaceAutostartState False Nothing
   extensionType = StateExtension
+
+chatClientManageHook :: ManageHook
+chatClientManageHook =
+  composeAll
+    [ className =? "discord" --> doShift "3"
+    , className =? "Discord" --> doShift "3"
+    , className =? "com.discordapp.Discord" --> doShift "3"
+    , className =? "signal" --> doShift "3"
+    , className =? "Signal" --> doShift "3"
+    , className =? "org.signal.Signal" --> doShift "3"
+    , className =? "element" --> doShift "3"
+    , className =? "Element" --> doShift "3"
+    , className =? "im.riot.Riot" --> doShift "3"
+    , className =? "zapzap" --> doShift "3"
+    , className =? "ZapZap" --> doShift "3"
+    , className =? "com.rtosta.zapzap" --> doShift "3"
+    ]
 
 ensureWindowOnWorkspace :: [String] -> WorkspaceId -> String -> X ()
 ensureWindowOnWorkspace classes targetWs cmd = do
