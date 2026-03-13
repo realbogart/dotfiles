@@ -8,5 +8,6 @@ Discord	flatpak run com.discordapp.Discord	com.discordapp.Discord
 Signal	flatpak run org.signal.Signal	org.signal.Signal
 Element	flatpak run im.riot.Riot	im.riot.Riot
 Spotify	flatpak run com.spotify.Client	com.spotify.Client
+WhatsApp	flatpak run com.rtosta.zapzap	com.rtosta.zapzap
 Flatpak: Update all	alacritty -e sh -lc "flatpak update -y; printf '\nPress Enter to close...'; read -r _"	flatpak-update
 Flatpak: List installed	alacritty -e sh -lc "flatpak list; printf '\nPress Enter to close...'; read -r _"	flatpak-list
