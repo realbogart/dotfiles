@@ -14,6 +14,7 @@ import qualified XMonad.StackSet as W
 import qualified XMonad.Util.ExtensibleState as XS
 import XMonad.Util.ClickableWorkspaces (clickablePP)
 import XMonad.Util.Run (spawnPipe)
+import XMonad.Util.SpawnOnce (spawnOnce)
 import System.IO (hPutStrLn)
 import System.IO.Error (catchIOError)
 
@@ -27,6 +28,11 @@ main = do
     , borderWidth = 0
     , modMask = mod4Mask
     , startupHook = do
+        spawnOnce "/run/current-system/sw/bin/xset s 600 5"
+        spawnOnce "/run/current-system/sw/bin/xset +dpms"
+        spawnOnce "xss-lock --transfer-sleep-lock -- /run/wrappers/bin/slock"
+        spawnOnce "lxqt-policykit-agent"
+        spawnOnce "dunst"
         windows $ W.greedyView "4"
         XS.put (WorkspaceAutostartState True (Just "4"))
         autostartWorkspaceApp "4"
