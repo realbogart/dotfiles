@@ -13,7 +13,7 @@ import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
 import XMonad.Hooks.Place (fixed, placeHook, withGaps)
 import XMonad.Layout.NoBorders (smartBorders)
 import XMonad.Layout.ResizableTile (ResizableTall (ResizableTall))
-import XMonad.Layout.Spacing (spacingWithEdge)
+import XMonad.Layout.Spacing (smartSpacingWithEdge)
 import qualified Data.Map as M
 import qualified XMonad.StackSet as W
 import qualified XMonad.Util.ExtensibleState as XS
@@ -153,8 +153,8 @@ clickableLayout label =
   "<action=`xdotool key Super_L+p` button=1>" ++ label ++ "</action>"
 
 myLayouts =
-  spacingWithEdge 8 tiled
-    ||| spacingWithEdge 8 (Mirror tiled)
+  smartSpacingWithEdge 16 tiled
+    ||| smartSpacingWithEdge 16 (Mirror tiled)
     ||| Full
   where
     tiled = ResizableTall 1 (3 / 100) (1 / 2) []
