@@ -10,6 +10,7 @@ import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppHidden, ppHiddenN
 import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
 import XMonad.Hooks.InsertPosition (Focus (Newer), Position (End), insertPosition)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
+import XMonad.Hooks.Place (fixed, placeHook, withGaps)
 import qualified Data.Map as M
 import qualified XMonad.StackSet as W
 import qualified XMonad.Util.ExtensibleState as XS
@@ -39,7 +40,8 @@ main = do
         autostartWorkspaceApp "4"
         startupHook def
     , manageHook =
-        insertPosition End Newer
+        gsimplecalManageHook
+        <+> insertPosition End Newer
         <+> manageSpawn
         <+> chatClientManageHook
         <+> manageDocks
@@ -141,6 +143,13 @@ formatLayoutName layout = case layout of
 clickableLayout :: String -> String
 clickableLayout label =
   "<action=`xdotool key Super_L+p` button=1>" ++ label ++ "</action>"
+
+gsimplecalManageHook :: ManageHook
+gsimplecalManageHook =
+  composeAll
+    [ appName =? "gsimplecal" --> placeHook (withGaps (0, 0, 32, 0) (fixed (1, 1)))
+    , className =? "Gsimplecal" --> placeHook (withGaps (0, 0, 32, 0) (fixed (1, 1)))
+    ]
 
 autostartWorkspaceApps :: X ()
 autostartWorkspaceApps = do
