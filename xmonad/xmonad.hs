@@ -11,6 +11,9 @@ import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
 import XMonad.Hooks.InsertPosition (Focus (Newer), Position (End), insertPosition)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
 import XMonad.Hooks.Place (fixed, placeHook, withGaps)
+import XMonad.Layout.NoBorders (smartBorders)
+import XMonad.Layout.ResizableTile (ResizableTall (ResizableTall))
+import XMonad.Layout.Spacing (spacingWithEdge)
 import qualified Data.Map as M
 import qualified XMonad.StackSet as W
 import qualified XMonad.Util.ExtensibleState as XS
@@ -28,6 +31,8 @@ main = do
   xmonad . ewmhFullscreen . ewmh . docks $ def
     { terminal = "alacritty"
     , borderWidth = 0
+    , normalBorderColor = "#3c3836"
+    , focusedBorderColor = "#d79921"
     , modMask = mod4Mask
     , startupHook = do
         spawnOnce "/run/current-system/sw/bin/xset s 600 5"
@@ -46,7 +51,7 @@ main = do
         <+> chatClientManageHook
         <+> manageDocks
         <+> manageHook def
-    , layoutHook = avoidStruts $ layoutHook def
+    , layoutHook = myLayoutHook
     , mouseBindings = \XConfig {XMonad.modMask = modm} ->
         M.fromList
           [ ((modm, button1), \w -> focus w >> mouseMoveWindow w >> windows W.shiftMaster)
@@ -60,13 +65,13 @@ main = do
             xmobarPP
               { ppOutput = \line -> catchIOError (hPutStrLn xmproc line) (\_ -> pure ())
               , ppRename = \_ ws -> baseWorkspaceLabel (W.tag ws)
-              , ppCurrent = xmobarColor "#282828" "#ffc24b" . wrap " " " "
-              , ppVisible = xmobarColor "#b3deef" "" . wrap " " " "
-              , ppHidden = xmobarColor "#f0f0f0" "" . wrap " " " "
-              , ppHiddenNoWindows = xmobarColor "#7c6f64" "" . wrap " " " "
-              , ppLayout = clickableLayout . xmobarColor "#d3869b" "" . formatLayoutName
-              , ppTitle = xmobarColor "#d3b987" "" . shorten 140
-              , ppSep = "  <fc=#7c6f64>·</fc>  "
+              , ppCurrent = xmobarColor "#282828" "#d79921" . wrap "  " "  "
+              , ppVisible = xmobarColor "#b8bb26" "" . wrap "  " "  "
+              , ppHidden = xmobarColor "#ebdbb2" "" . wrap "  " "  "
+              , ppHiddenNoWindows = xmobarColor "#7c6f64" "" . wrap "  " "  "
+              , ppLayout = clickableLayout . xmobarColor "#83a598" "" . wrap " " " " . formatLayoutName
+              , ppTitle = xmobarColor "#d5c4a1" "" . shorten 96
+              , ppSep = "  <fc=#504945>·</fc>  "
               }
           dynamicLogWithPP clickable
     , keys = \c ->
@@ -128,7 +133,7 @@ baseWorkspaceLabel ws = case ws of
   _ -> ws
 
 workspaceLabel :: String -> Int -> String -> String
-workspaceLabel n iconCode label = n ++ " " ++ label
+workspaceLabel n iconCode label = n ++ " " ++ xmobarIcon iconCode ++ " " ++ label
 
 xmobarIcon :: Int -> String
 xmobarIcon iconCode = "<fn=1>" ++ [chr iconCode] ++ "</fn>"
@@ -136,13 +141,24 @@ xmobarIcon iconCode = "<fn=1>" ++ [chr iconCode] ++ "</fn>"
 formatLayoutName :: String -> String
 formatLayoutName layout = case layout of
   "Tall" -> "stack"
+  "ResizableTall" -> "stack"
   "Mirror Tall" -> "row"
+  "Mirror ResizableTall" -> "row"
   "Full" -> "full"
   other -> other
 
 clickableLayout :: String -> String
 clickableLayout label =
   "<action=`xdotool key Super_L+p` button=1>" ++ label ++ "</action>"
+
+myLayouts =
+  spacingWithEdge 8 tiled
+    ||| spacingWithEdge 8 (Mirror tiled)
+    ||| Full
+  where
+    tiled = ResizableTall 1 (3 / 100) (1 / 2) []
+
+myLayoutHook = avoidStruts $ smartBorders myLayouts
 
 gsimplecalManageHook :: ManageHook
 gsimplecalManageHook =
