@@ -142,7 +142,7 @@ xmobarIcon iconCode = "<fn=1>" ++ [chr iconCode] ++ "</fn>"
 formatLayoutName :: String -> String
 formatLayoutName layout = case layout of
   "Tall" -> "stack"
-  "ResizableTall" -> "stack"
+  "Spacing ResizableTall" -> "stack"
   "Mirror Tall" -> "row"
   "Mirror ResizableTall" -> "row"
   "Full" -> "full"
@@ -154,10 +154,10 @@ clickableLayout label =
 
 myLayouts =
   smartSpacingWithEdge 16 tiled
-    ||| smartSpacingWithEdge 16 (Mirror tiled)
+    -- ||| smartSpacingWithEdge 16 (Mirror tiled)
     ||| Full
   where
-    tiled = ResizableTall 1 (3 / 100) (1 / 2) []
+    tiled = ResizableTall 1 (3 / 100) (2 / 3) []
 
 myLayoutHook = avoidStruts $ smartBorders myLayouts
 
