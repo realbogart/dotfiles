@@ -15,5 +15,5 @@ Config
       ]
   , sepChar = "%"
   , alignSep = "}{"
-  , template = " %UnsafeStdinReader% }{ <action=`gsimplecal` button=1><fc=#d3b987>%date%</fc></action> <fc=#7c6f64>·</fc> <fc=#eeeeee>%time%</fc> "
+  , template = " %UnsafeStdinReader% }{ <action=`/home/johan/dotfiles/xmonad/toggle-calendar.sh` button=1><fc=#d3b987>%date%</fc></action> <fc=#7c6f64>·</fc> <fc=#eeeeee>%time%</fc> "
   }
