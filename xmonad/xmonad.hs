@@ -27,7 +27,7 @@ gruvboxBg :: String
 gruvboxBg = "#282828"
 
 gapAccentColor :: String
-gapAccentColor = "#1a1d23"
+gapAccentColor = "#000000"
 
 main :: IO ()
 main = do
