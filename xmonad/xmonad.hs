@@ -35,6 +35,7 @@ main = do
     , focusedBorderColor = "#d79921"
     , modMask = mod4Mask
     , startupHook = do
+        spawnOnce "/run/current-system/sw/bin/xrdb -merge /home/johan/dotfiles/.Xresources"
         spawnOnce "/run/current-system/sw/bin/xset s 600 5"
         spawnOnce "/run/current-system/sw/bin/xset +dpms"
         spawnOnce "xss-lock --transfer-sleep-lock -- /run/wrappers/bin/slock"
