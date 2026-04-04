@@ -1,7 +1,8 @@
 show_calendar = 1
 show_timezones = 0
+force_lang = sv_SE.UTF-8
 mark_today = 1
-show_week_numbers = 0
+show_week_numbers = 1
 close_on_unfocus = 1
 close_on_mouseleave = 0
 mainwindow_decorated = 0
