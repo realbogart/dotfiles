@@ -26,8 +26,15 @@ import System.IO.Error (catchIOError)
 gruvboxBg :: String
 gruvboxBg = "#282828"
 
+-- 4f5966
+-- 3f4f4c
+-- 39424d
+-- 23343b
+-- 3a2f3c
+-- 3a2f3c
+
 gapAccentColor :: String
-gapAccentColor = "#000000"
+gapAccentColor = "#2e3347"
 
 main :: IO ()
 main = do
@@ -42,7 +49,7 @@ main = do
     , modMask = mod4Mask
     , startupHook = do
         spawnOnce "/run/current-system/sw/bin/xrdb -merge /home/johan/dotfiles/.Xresources"
-        spawnOnce ("/run/current-system/sw/bin/xsetroot -solid '" ++ gapAccentColor ++ "'")
+        spawn ("/etc/profiles/per-user/johan/bin/hsetroot -solid '" ++ gapAccentColor ++ "'")
         spawnOnce "/run/current-system/sw/bin/xset s 600 5"
         spawnOnce "/run/current-system/sw/bin/xset +dpms"
         spawnOnce "xss-lock --transfer-sleep-lock -- /run/wrappers/bin/slock"
