@@ -37,8 +37,8 @@ main = do
   xmonad . ewmhFullscreen . ewmh . docks $ def
     { terminal = "alacritty"
     , borderWidth = 0
-    , normalBorderColor = "#3c3836"
-    , focusedBorderColor = "#d79921"
+    , normalBorderColor = "#000000"
+    , focusedBorderColor = "#333333"
     , modMask = mod4Mask
     , startupHook = do
         spawnOnce "/run/current-system/sw/bin/xrdb -merge /home/johan/dotfiles/.Xresources"
