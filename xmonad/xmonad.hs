@@ -8,6 +8,7 @@ import Data.Char (chr)
 import Data.List (find)
 import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppHidden, ppHiddenNoWindows, ppLayout, ppOutput, ppRename, ppSep, ppTitle, ppVisible, shorten, wrap, xmobarColor, xmobarPP)
 import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
+import XMonad.Hooks.InsertPosition (Focus (Newer), Position (End), insertPosition)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
 import qualified Data.Map as M
 import qualified XMonad.StackSet as W
@@ -38,7 +39,8 @@ main = do
         autostartWorkspaceApp "4"
         startupHook def
     , manageHook =
-        manageSpawn
+        insertPosition End Newer
+        <+> manageSpawn
         <+> chatClientManageHook
         <+> manageDocks
         <+> manageHook def

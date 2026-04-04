@@ -11,3 +11,4 @@ Spotify	flatpak run com.spotify.Client	com.spotify.Client
 WhatsApp	flatpak run com.rtosta.zapzap	com.rtosta.zapzap
 Flatpak: Update all	alacritty -e sh -lc "flatpak update -y; printf '\nPress Enter to close...'; read -r _"	flatpak-update
 Flatpak: List installed	alacritty -e sh -lc "flatpak list; printf '\nPress Enter to close...'; read -r _"	flatpak-list
+REAPER	sh -lc "cd /home/johan/music/reaper-env && nohup direnv exec . ./scripts/run-reaper >/dev/null 2>&1 &"	audio-x-generic
