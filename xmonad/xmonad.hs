@@ -23,6 +23,12 @@ import XMonad.Util.SpawnOnce (spawnOnce)
 import System.IO (hPutStrLn)
 import System.IO.Error (catchIOError)
 
+gruvboxBg :: String
+gruvboxBg = "#282828"
+
+gapAccentColor :: String
+gapAccentColor = "#1a1d23"
+
 main :: IO ()
 main = do
   xmproc <-
@@ -36,6 +42,7 @@ main = do
     , modMask = mod4Mask
     , startupHook = do
         spawnOnce "/run/current-system/sw/bin/xrdb -merge /home/johan/dotfiles/.Xresources"
+        spawnOnce ("/run/current-system/sw/bin/xsetroot -solid '" ++ gapAccentColor ++ "'")
         spawnOnce "/run/current-system/sw/bin/xset s 600 5"
         spawnOnce "/run/current-system/sw/bin/xset +dpms"
         spawnOnce "xss-lock --transfer-sleep-lock -- /run/wrappers/bin/slock"
@@ -66,7 +73,7 @@ main = do
             xmobarPP
               { ppOutput = \line -> catchIOError (hPutStrLn xmproc line) (\_ -> pure ())
               , ppRename = \_ ws -> baseWorkspaceLabel (W.tag ws)
-              , ppCurrent = xmobarColor "#282828" "#d79921" . wrap "  " "  "
+              , ppCurrent = xmobarColor gruvboxBg "#d79921" . wrap "  " "  "
               , ppVisible = xmobarColor "#b8bb26" "" . wrap "  " "  "
               , ppHidden = xmobarColor "#ebdbb2" "" . wrap "  " "  "
               , ppHiddenNoWindows = xmobarColor "#7c6f64" "" . wrap "  " "  "
