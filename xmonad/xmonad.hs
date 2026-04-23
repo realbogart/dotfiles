@@ -55,6 +55,7 @@ main = do
         spawnOnce "xss-lock --transfer-sleep-lock -- /run/wrappers/bin/slock"
         spawnOnce "lxqt-policykit-agent"
         spawnOnce "dunst"
+        spawnOnce "copyq --start-server"
         windows $ W.greedyView "4"
         XS.put (WorkspaceAutostartState True (Just "4"))
         autostartWorkspaceApp "4"
@@ -210,12 +211,12 @@ autostartWorkspaceApp currentWs = case currentWs of
     ensureWindowOnWorkspace
       ["Brave-browser", "brave-browser", "Brave Browser", "com.brave.Browser"]
       "5"
-      "flatpak run com.brave.Browser"
+      "brave"
   "6" ->
     ensureWindowOnWorkspace
       ["Brave-browser", "brave-browser", "Brave Browser", "com.brave.Browser"]
       "6"
-      "flatpak run com.brave.Browser --new-window https://www.youtube.com"
+      "brave --new-window https://www.youtube.com"
   _ -> pure ()
 
 data WorkspaceAutostartState = WorkspaceAutostartState Bool (Maybe WorkspaceId)
