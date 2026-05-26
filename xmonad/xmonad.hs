@@ -142,7 +142,7 @@ baseWorkspaceLabel ws = case ws of
   "3" -> workspaceLabel "3" 0xf086 "chats"
   "4" -> workspaceLabel "4" 0xf120 "tmux"
   "5" -> workspaceLabel "5" 0xf0ac "web"
-  "6" -> workspaceLabel "6" 0xf16a "youtube"
+  "6" -> workspaceLabel "6" 0xf07b "misc"
   "7" -> workspaceLabel "7" 0xf07b "misc"
   "8" -> workspaceLabel "8" 0xf07b "misc"
   "9" -> workspaceLabel "9" 0xf07b "misc"
@@ -212,11 +212,6 @@ autostartWorkspaceApp currentWs = case currentWs of
       ["Brave-browser", "brave-browser", "Brave Browser", "com.brave.Browser"]
       "5"
       "brave"
-  "6" ->
-    ensureWindowOnWorkspace
-      ["Brave-browser", "brave-browser", "Brave Browser", "com.brave.Browser"]
-      "6"
-      "brave --new-window https://www.youtube.com"
   _ -> pure ()
 
 data WorkspaceAutostartState = WorkspaceAutostartState Bool (Maybe WorkspaceId)
