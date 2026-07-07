@@ -12,3 +12,5 @@
 	ff = only
 [rebase]
 	autoStash = true
+[safe]
+	directory = /etc/nixos
