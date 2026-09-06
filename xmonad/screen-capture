@@ -1,0 +1,229 @@
+#!/usr/bin/env bash
+# Dependencies and the launcher are declared in /etc/nixos/home.nix.
+set -euo pipefail
+umask 077
+
+unit=xmonad-screen-record.service
+runtime="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/screen-capture"
+mkdir -p "$runtime"
+
+notify() {
+    notify-send --app-name='Screen capture' "$@" || true
+}
+
+die() {
+    notify -u critical 'Capture failed' "$*"
+    printf '%s\n' "$*" >&2
+    exit 1
+}
+
+active() {
+    case $(systemctl --user show "$unit" -p ActiveState --value 2>/dev/null) in
+        active|activating|deactivating) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+select_region() {
+    # XMonad must release its shortcut grab before slop grabs the keyboard.
+    sleep 0.2
+    slop --noopengl --bordersize=3 --color=0.83,0.60,0.13,1 --format='%g' "$@"
+}
+
+media_directory() {
+    local directory
+    directory=$(xdg-user-dir "$1")
+    if [[ -z $directory || $directory == "$HOME" ]]; then directory="$HOME/$2"; fi
+    printf '%s/%s\n' "$directory" "$3"
+}
+
+parse_region() {
+    [[ $1 =~ ^([0-9]+)x([0-9]+)\+([0-9]+)\+([0-9]+)$ ]] || die 'Invalid capture rectangle.'
+    width=$((10#${BASH_REMATCH[1]}))
+    height=$((10#${BASH_REMATCH[2]}))
+    left=$((10#${BASH_REMATCH[3]}))
+    top=$((10#${BASH_REMATCH[4]}))
+    read -r screen_width screen_height < <(xdotool getdisplaygeometry)
+    ((width > 0 && height > 0 && left + width <= screen_width && top + height <= screen_height)) ||
+        die 'The rectangle must be inside the screen.'
+}
+
+copy_image() {
+    # Keep an X11 selection owner alive; never advertise the filename as text.
+    # Close the selection lock in the daemon so the next capture is not blocked.
+    xclip -selection clipboard -t image/png -loops 0 -i "$1" 9>&- >/dev/null 2>&1
+    local check
+    check=$(mktemp "$runtime/clipboard.XXXXXX")
+    # CopyQ can request/retain the image asynchronously. Check the actual bytes
+    # from another X11 client, both immediately and after that handoff.
+    for delay in 0.1 0.5; do
+        sleep "$delay"
+        if ! timeout 3 xclip -selection clipboard -t image/png -o > "$check" 2>/dev/null ||
+            ! cmp -s "$1" "$check"; then
+            rm -f "$check"
+            die "PNG saved to $1, but the clipboard could not be verified."
+        fi
+    done
+    rm -f "$check"
+}
+
+record_worker() {
+    local geometry=$1 audio=$2 destination=$3 encoder='' stopped=0 result=0
+    local partial="${destination%.mp4}.recording.mkv"
+    local -a audio_args=() audio_encoding=()
+    local audio_label source
+    parse_region "$geometry"
+    case "$audio" in
+        silent) audio_label='No audio' ;;
+        desktop)
+            audio_label='Desktop sound'
+            source=$(pactl get-default-sink) || die 'Could not find the desktop audio output.'
+            source+=.monitor
+            audio_args=(-thread_queue_size 1024 -f pulse -i "$source") ;;
+        mic)
+            audio_label='Microphone'
+            source=$(pactl get-default-source) || die 'Could not find the microphone input.'
+            audio_args=(-thread_queue_size 1024 -f pulse -i "$source") ;;
+        *) die "Unknown audio mode: $audio" ;;
+    esac
+    if [[ $audio != silent ]]; then audio_encoding=(-c:a aac -b:a 192k); fi
+    # shellcheck disable=SC2329 # Invoked by the signal trap below.
+    stop_encoder() {
+        stopped=1
+        trap '' TERM INT
+        if [[ -n $encoder ]]; then
+            kill -INT "$encoder" 2>/dev/null || true
+        fi
+    }
+    trap stop_encoder TERM INT
+    printf '%s\n' "$audio" > "$runtime/audio-mode"
+    printf 'Recording rectangle %s; audio: %s%s\n' "$geometry" "$audio" "${source:+ ($source)}"
+    notify -t 1800 "Recording in 2 seconds — $audio_label" "${width}×${height} • Alt+Print to stop"
+    sleep 2 &
+    wait $! || true
+    ((stopped == 0)) || return 0
+    # MKV stays recoverable if capture is interrupted; remux to shareable MP4
+    # only after stopping. Padding preserves odd-sized selections with H.264.
+    ffmpeg -hide_banner -loglevel warning -nostdin -n \
+        -thread_queue_size 1024 -f x11grab -framerate 30 \
+        -video_size "${width}x${height}" -show_region 1 -region_border 3 \
+        -i "${DISPLAY}+${left},${top}" "${audio_args[@]}" \
+        -vf 'pad=ceil(iw/2)*2:ceil(ih/2)*2' \
+        -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p \
+        "${audio_encoding[@]}" "$partial" &
+    encoder=$!
+    wait "$encoder" || result=$?
+    if ((stopped)); then
+        # A trapped signal interrupts wait before the child finishes flushing.
+        wait "$encoder" 2>/dev/null || true
+    elif ((result != 0)); then
+        die "Recorder exited unexpectedly. See journalctl --user -u $unit. Recovery file: $partial"
+    fi
+    trap '' TERM INT
+    [[ -s $partial ]] || die 'No video frames were recorded.'
+    if ffmpeg -hide_banner -loglevel error -nostdin -n -i "$partial" \
+        -map 0 -c copy -movflags +faststart "$destination" &&
+        ffprobe -v error -select_streams v:0 -show_entries stream=codec_name \
+            -of csv=p=0 "$destination" | grep -qx h264; then
+        rm -f "$partial"
+        notify 'Recording saved' "$destination"
+    else
+        die "Could not finalize video. Recovery file: $partial"
+    fi
+}
+
+command=${1:-help}
+shift || true
+case "$command" in
+    status)
+        if active; then
+            audio=''
+            if [[ -r $runtime/audio-mode ]]; then read -r audio < "$runtime/audio-mode"; fi
+            case "$audio" in
+                desktop) label='REC + SOUND' ;;
+                mic) label='REC + MIC' ;;
+                *) label='REC SILENT' ;;
+            esac
+            printf '<fc=#fb4934>● %s</fc> ' "$label"
+        fi
+        exit 0 ;;
+    stop)
+        if active; then systemctl --user stop "$unit"; fi
+        exit 0 ;;
+    _record)
+        record_worker "$@"
+        exit 0 ;;
+    shot|annotate|full|record) ;;
+    *)
+        cat <<'EOF'
+screen-capture shot [WxH+X+Y]       Select, save and copy a PNG
+screen-capture annotate            Select and annotate with Flameshot; Enter accepts
+screen-capture full                Save and copy the entire desktop
+screen-capture record [desktop|silent|mic] [WxH+X+Y]
+                                  Select/start with desktop sound (default), or stop
+screen-capture stop                Stop and save without starting a new recording
+screen-capture status              Xmobar recording indicator
+Escape/right-click cancels rectangle selection. Files remain local.
+EOF
+        exit 0 ;;
+esac
+
+[[ -n ${DISPLAY:-} ]] || die 'An X11 display is required.'
+if [[ $command == record ]] && active; then
+    systemctl --user stop "$unit"
+    exit 0
+fi
+# One selection dialog at a time. The recording itself runs in a user service.
+exec 9>"$runtime/selection.lock"
+flock -n 9 || exit 0
+
+if [[ $command == record ]]; then
+    audio=${1:-desktop}
+    case "$audio" in silent|desktop|mic) ;; *) die "Unknown audio mode: $audio" ;; esac
+    geometry=${2:-}
+    if [[ -z $geometry ]]; then
+        case "$audio" in
+            desktop) label='Desktop sound' ;;
+            mic) label='Microphone' ;;
+            silent) label='No audio' ;;
+        esac
+        notify -t 2500 "Select recording area — $label" 'Drag a rectangle. Escape cancels.'
+        geometry=$(select_region --tolerance=0) || exit 0
+    fi
+    parse_region "$geometry"
+    ((width >= 16 && height >= 16)) || die 'Drag a rectangle at least 16×16 pixels to record.'
+    directory=$(media_directory VIDEOS Videos Recordings)
+    mkdir -p "$directory"
+    destination="$directory/Recording-$(date +%Y-%m-%d_%H-%M-%S-%N).mp4"
+    systemd-run --user --quiet --collect --unit="$unit" \
+        --property=Type=exec --property=KillMode=mixed \
+        --property=TimeoutStopSec=60 --property=UMask=0077 \
+        --setenv="DISPLAY=$DISPLAY" --setenv="XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}" \
+        --setenv="PATH=$PATH" \
+        "$(command -v bash)" "$0" _record "$geometry" "$audio" "$destination" ||
+        die 'Could not start the recording service.'
+else
+    directory=$(media_directory PICTURES Pictures Screenshots)
+    mkdir -p "$directory"
+    temporary=$(mktemp "$directory/.capture.XXXXXX.png")
+    trap 'rm -f "$temporary"' EXIT
+    case "$command" in
+        shot)
+            geometry=${1:-}
+            [[ -n $geometry ]] || geometry=$(select_region) || exit 0
+            parse_region "$geometry"
+            maim --hidecursor --geometry="$geometry" "$temporary" || die 'Screenshot failed.' ;;
+        full)
+            sleep 0.2
+            maim --hidecursor "$temporary" || die 'Screenshot failed.' ;;
+        annotate)
+            sleep 0.2
+            flameshot gui --raw > "$temporary" || exit 0 ;;
+    esac
+    [[ -s $temporary ]] || exit 0
+    destination="$directory/Screenshot-$(date +%Y-%m-%d_%H-%M-%S-%N).png"
+    mv "$temporary" "$destination"
+    copy_image "$destination"
+    notify -t 3500 'Screenshot saved and copied' "$destination"
+    printf '%s\n' "$destination"
+fi
