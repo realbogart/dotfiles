@@ -8,7 +8,8 @@ import Data.Char (chr)
 import Data.List (find)
 import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppHidden, ppHiddenNoWindows, ppLayout, ppOutput, ppRename, ppSep, ppTitle, ppVisible, shorten, wrap, xmobarColor, xmobarPP)
 import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
-import XMonad.Hooks.InsertPosition (Focus (Newer), Position (End), insertPosition)
+import XMonad.Hooks.InsertPosition (Focus (Newer), Position (End, Master), insertPosition)
+import XMonad.Hooks.ManageHelpers (doCenterFloat, isDialog)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
 import XMonad.Hooks.Place (fixed, placeHook, withGaps)
 import XMonad.Layout.NoBorders (smartBorders)
@@ -61,7 +62,8 @@ main = do
         autostartWorkspaceApp "4"
         startupHook def
     , manageHook =
-        gsimplecalManageHook
+        dialogManageHook
+        <+> gsimplecalManageHook
         <+> insertPosition End Newer
         <+> manageSpawn
         <+> chatClientManageHook
@@ -177,6 +179,16 @@ myLayouts =
     tiled = ResizableTall 1 (3 / 100) (2 / 3) []
 
 myLayoutHook = avoidStruts $ smartBorders myLayouts
+
+-- Dialogs float centred on top, also those without WM_TRANSIENT_FOR such as
+-- xdg-desktop-portal's file chooser (a browser's "Save as"), which would
+-- otherwise be tiled out of sight while the browser waits on it. Floats are
+-- stacked in stack order, so a dialog goes first (Master), above a
+-- fullscreen window; this hook runs last, after insertPosition End.
+dialogManageHook :: ManageHook
+dialogManageHook =
+  (isDialog <||> className =? "Xdg-desktop-portal-gtk")
+    --> insertPosition Master Newer <+> doCenterFloat
 
 gsimplecalManageHook :: ManageHook
 gsimplecalManageHook =

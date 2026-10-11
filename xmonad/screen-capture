@@ -212,6 +212,8 @@ else
             geometry=${1:-}
             [[ -n $geometry ]] || geometry=$(select_region) || exit 0
             parse_region "$geometry"
+            # Let the compositor finish unmapping slop's selection overlay.
+            sleep 0.3
             maim --hidecursor --geometry="$geometry" "$temporary" || die 'Screenshot failed.' ;;
         full)
             sleep 0.2
