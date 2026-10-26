@@ -1,0 +1,17 @@
+# System tray in the bottom-right corner of xmobar (36px tall). It grows
+# leftwards as icons appear; tray-padding reserves that width in xmobar.
+background "#282828"
+decorations none
+dockapp_mode none
+geometry 1x1-0-0
+grow_gravity E
+icon_gravity E
+icon_size 24
+slot_size 36
+kludges force_icons_size
+skip_taskbar true
+sticky true
+transparent false
+window_layer normal
+window_strut none
+window_type dock

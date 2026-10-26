@@ -6,12 +6,13 @@ import XMonad.Actions.SpawnOn (manageSpawn, spawnOn)
 import Control.Monad (unless, when)
 import Data.Char (chr)
 import Data.List (find)
-import XMonad.Hooks.DynamicLog (dynamicLogWithPP, ppCurrent, ppHidden, ppHiddenNoWindows, ppLayout, ppOutput, ppRename, ppSep, ppTitle, ppVisible, shorten, wrap, xmobarColor, xmobarPP)
 import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
 import XMonad.Hooks.InsertPosition (Focus (Newer), Position (End, Master), insertPosition)
 import XMonad.Hooks.ManageHelpers (doCenterFloat, isDialog)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
 import XMonad.Hooks.Place (fixed, placeHook, withGaps)
+import XMonad.Hooks.StatusBar (StatusBarConfig, statusBarProp, withSB)
+import XMonad.Hooks.StatusBar.PP (PP (..), shorten, wrap, xmobarColor, xmobarPP)
 import XMonad.Layout.NoBorders (smartBorders)
 import XMonad.Layout.ResizableTile (ResizableTall (ResizableTall))
 import XMonad.Layout.Spacing (smartSpacingWithEdge)
@@ -19,10 +20,7 @@ import qualified Data.Map as M
 import qualified XMonad.StackSet as W
 import qualified XMonad.Util.ExtensibleState as XS
 import XMonad.Util.ClickableWorkspaces (clickablePP)
-import XMonad.Util.Run (spawnPipe)
 import XMonad.Util.SpawnOnce (spawnOnce)
-import System.IO (hPutStrLn)
-import System.IO.Error (catchIOError)
 
 gruvboxBg :: String
 gruvboxBg = "#282828"
@@ -38,11 +36,8 @@ gapAccentColor :: String
 gapAccentColor = "#2e3347"
 
 main :: IO ()
-main = do
-  xmproc <-
-    spawnPipe
-      "sh -c 'pkill -x xmobar >/dev/null 2>&1 || true; exec /run/current-system/sw/bin/xmobar /home/johan/dotfiles/xmonad/xmobarrc.hs'"
-  xmonad . ewmhFullscreen . ewmh . docks $ def
+main =
+  xmonad . withSB statusBar . ewmhFullscreen . ewmh . docks $ def
     { terminal = "alacritty"
     , borderWidth = 0
     , normalBorderColor = "#000000"
@@ -56,6 +51,8 @@ main = do
         spawnOnce "xss-lock --transfer-sleep-lock -- /run/wrappers/bin/slock"
         spawnOnce "lxqt-policykit-agent"
         spawnOnce "dunst"
+        -- Start the tray before CopyQ so its icon lands in it.
+        spawnOnce "stalonetray -c /home/johan/dotfiles/xmonad/stalonetrayrc"
         spawnOnce "copyq --start-server"
         windows $ W.greedyView "4"
         XS.put (WorkspaceAutostartState True (Just "4"))
@@ -76,30 +73,34 @@ main = do
           , ((modm, button2), \w -> focus w >> kill)
           , ((modm, button3), \w -> focus w >> mouseResizeWindow w >> windows W.shiftMaster)
           ]
-    , logHook =
-        autostartWorkspaceApps
-        >> do
-          clickable <- clickablePP $
-            xmobarPP
-              { ppOutput = \line -> catchIOError (hPutStrLn xmproc line) (\_ -> pure ())
-              , ppRename = \_ ws -> baseWorkspaceLabel (W.tag ws)
-              , ppCurrent = xmobarColor gruvboxBg "#d79921" . wrap "  " "  "
-              , ppVisible = xmobarColor "#b8bb26" "" . wrap "  " "  "
-              , ppHidden = xmobarColor "#ebdbb2" "" . wrap "  " "  "
-              , ppHiddenNoWindows = xmobarColor "#7c6f64" "" . wrap "  " "  "
-              , ppLayout = clickableLayout . xmobarColor "#83a598" "" . wrap " " " " . formatLayoutName
-              , ppTitle = xmobarColor "#d5c4a1" "" . shorten 96
-              , ppSep = "  <fc=#504945>·</fc>  "
-              }
-          dynamicLogWithPP clickable
+    , logHook = autostartWorkspaceApps
     , keys = \c ->
         M.union (M.fromList (customKeys c)) (keys def c)
     }
+
+-- withSB starts xmobar, feeds it through the _XMONAD_LOG property and
+-- kills it again on restart.
+statusBar :: StatusBarConfig
+statusBar =
+  statusBarProp "/run/current-system/sw/bin/xmobar /home/johan/dotfiles/xmonad/xmobarrc.hs" $
+    clickablePP
+      xmobarPP
+        { ppRename = \_ ws -> baseWorkspaceLabel (W.tag ws)
+        , ppCurrent = xmobarColor gruvboxBg "#d79921" . wrap "  " "  "
+        , ppVisible = xmobarColor "#b8bb26" "" . wrap "  " "  "
+        , ppHidden = xmobarColor "#ebdbb2" "" . wrap "  " "  "
+        , ppHiddenNoWindows = xmobarColor "#7c6f64" "" . wrap "  " "  "
+        , ppLayout = clickableLayout . xmobarColor "#83a598" "" . wrap " " " " . formatLayoutName
+        , ppTitle = xmobarColor "#d5c4a1" "" . shorten 96
+        , ppSep = "  <fc=#504945>·</fc>  "
+        }
 
 customKeys :: XConfig Layout -> [((KeyMask, KeySym), X ())]
 customKeys c =
   [ ((modm, xK_r), spawn "xmonad --recompile; xmonad --restart")
   , ((modm, xK_odiaeresis), spawn "/home/johan/.local/bin/rofi-launcher")
+  , ((modm, xK_g), spawn "rofi -show window")
+  , ((modm, xK_v), spawn "copyq toggle")
   , ((mod1Mask, xK_Tab), cycleRecentNonEmptyWS [xK_Alt_L, xK_Alt_R] xK_Tab xK_grave)
   , ((modm, xK_y), rotAllDown)
   , ((modm, xK_space), spawn "/home/johan/dotfiles/xmonad/toggle-media.sh")
