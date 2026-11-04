@@ -169,10 +169,18 @@ deliver_video() {
 Click to play.${note:+ $note}"
 }
 
+hide_border() {
+    # Reaping it here keeps bash from logging "Killed" to the journal.
+    [[ -n $border ]] || return 0
+    kill -KILL "$border" 2>/dev/null || true
+    wait "$border" 2>/dev/null || true
+    border=''
+}
+
 record_worker() {
-    local geometry=$1 audio=$2 destination=$3 encoder='' stopped=0 result=0
+    local geometry=$1 audio=$2 destination=$3 encoder='' border='' stopped=0 result=0
     local partial="${destination%.mp4}.recording.mkv"
-    local -a audio_args=() audio_encoding=()
+    local -a audio_args=() audio_encoding=() gsr_audio=()
     local audio_label source
     parse_region "$geometry"
     case "$audio" in
@@ -188,7 +196,10 @@ record_worker() {
             audio_args=(-thread_queue_size 1024 -f pulse -i "$source") ;;
         *) die "Unknown audio mode: $audio" ;;
     esac
-    if [[ $audio != silent ]]; then audio_encoding=(-c:a aac -b:a 192k); fi
+    if [[ $audio != silent ]]; then
+        audio_encoding=(-c:a aac -b:a 192k)
+        gsr_audio=(-a "$source" -ac aac -ab 192)
+    fi
     # shellcheck disable=SC2329 # Invoked by the signal trap below.
     stop_encoder() {
         stopped=1
@@ -204,16 +215,43 @@ record_worker() {
     sleep 2 &
     wait $! || true
     ((stopped == 0)) || return 0
-    # MKV stays recoverable if capture is interrupted; remux to shareable MP4
-    # only after stopping. Padding preserves odd-sized selections with H.264.
-    ffmpeg -hide_banner -loglevel warning -nostdin -n \
-        -thread_queue_size 1024 -f x11grab -framerate 30 \
-        -video_size "${width}x${height}" -show_region 1 -region_border 3 \
-        -i "${DISPLAY}+${left},${top}" "${audio_args[@]}" \
-        -vf 'pad=ceil(iw/2)*2:ceil(ih/2)*2' \
-        -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p \
-        "${audio_encoding[@]}" "$partial" &
+    # MKV stays recoverable if capture is interrupted; it is compressed to a
+    # shareable MP4 only after stopping.
+    # GPU Screen Recorder captures and encodes on the GPU (NVENC/VAAPI). x11grab
+    # instead makes the X server copy every frame to the CPU, stalling other
+    # clients for hundreds of milliseconds at 4K, so it is only the fallback.
+    gpu-screen-recorder -w "${width}x${height}+${left}+${top}" -f 30 -k h264 \
+        -q very_high -v no "${gsr_audio[@]}" -c mkv -o "$partial" &
     encoder=$!
+    # GSR draws no outline. An x11grab that grabs one frame per hour only shows
+    # the region border; it does no further capture work. It ignores SIGINT
+    # while sleeping, so it is killed outright.
+    ffmpeg -hide_banner -loglevel error -nostdin -f x11grab -framerate 1/3600 \
+        -video_size "${width}x${height}" -show_region 1 -region_border 3 \
+        -i "${DISPLAY}+${left},${top}" -f null - &
+    border=$!
+    # shellcheck disable=SC2064 # Expand the PID now.
+    trap "kill -KILL $border 2>/dev/null || true" EXIT
+    # Without a usable GPU (e.g. Xvfb), GSR exits within a fraction of a second.
+    sleep 1 &
+    wait $! || true
+    if ((stopped == 0)) && ! kill -0 "$encoder" 2>/dev/null; then
+        wait "$encoder" || true
+        printf 'gpu-screen-recorder failed; falling back to x11grab\n' >&2
+        hide_border
+        rm -f "$partial"
+        # Padding preserves odd-sized selections with H.264.
+        ffmpeg -hide_banner -loglevel warning -nostdin -n \
+            -thread_queue_size 1024 -f x11grab -framerate 30 \
+            -video_size "${width}x${height}" -show_region 1 -region_border 3 \
+            -i "${DISPLAY}+${left},${top}" "${audio_args[@]}" \
+            -vf 'pad=ceil(iw/2)*2:ceil(ih/2)*2' \
+            -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p \
+            "${audio_encoding[@]}" "$partial" &
+        encoder=$!
+        # A stop that arrived while the fallback was starting.
+        if ((stopped)); then kill -INT "$encoder" 2>/dev/null || true; fi
+    fi
     wait "$encoder" || result=$?
     if ((stopped)); then
         # A trapped signal interrupts wait before the child finishes flushing.
@@ -222,6 +260,7 @@ record_worker() {
         die "Recorder exited unexpectedly. See journalctl --user -u $unit. Recovery file: $partial"
     fi
     trap '' TERM INT
+    hide_border
     [[ -s $partial ]] || die 'No video frames were recorded.'
     notify -t 3000 'Compressing recording…' 'Xmobar shows SAVING until it is done.'
     if compress_video "$partial" "$destination" && is_h264 "$destination"; then

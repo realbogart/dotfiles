@@ -30,7 +30,10 @@ are padded by at most one pixel for compatibility. During recording, a
 `.recording.mkv` file is retained so an interrupted session can be recovered.
 Capture stays local.
 
-Live capture uses a fast, high-bitrate encode so it keeps up at 4K. After
+Live capture uses GPU Screen Recorder's hardware encoder (see below), at a high
+bitrate. If it cannot start, the recording falls back to FFmpeg x11grab, which
+causes stutter at large sizes; the journal then says "falling back to
+x11grab". After
 stopping, that file is re-encoded for sharing (x264 `slow`, CRF 26, scaled down
 to fit 1920×1080, or 1080×1920 for portrait rectangles; never upscaled). Xmobar
 shows **SAVING** meanwhile; the MKV is deleted once the MP4 is verified. It runs
@@ -72,8 +75,19 @@ Investigated on 2026-09-06 for this XMonad/X11 session:
 - [Flameshot](https://flameshot.org/docs/advanced/commandline-options/) remains
   useful for annotations. Its raw PNG output goes through the same save/copy
   path as maim, bypassing its built-in clipboard action.
-- [FFmpeg's X11 capture](https://ffmpeg.org/ffmpeg-devices.html#x11grab) integrates
-  directly with selection and shortcuts, with no recording window to arrange.
+- [GPU Screen Recorder](https://git.dec05eba.com/gpu-screen-recorder/about/)
+  records the rectangle (added 2026-11-04). It captures and encodes on the GPU
+  (NVENC on the 5090, VAAPI on AMD/Intel), so the desktop does not stutter.
+  Measured while recording the full 4K screen, X11 round trips stayed at
+  baseline (worst 3–4 ms) using ~15% of one CPU core.
+  `/etc/nixos/overlays/default.nix` patches out its NVENC API version guess,
+  which wrongly rejected the 595 driver for nixpkgs' FFmpeg.
+- [FFmpeg's X11 capture](https://ffmpeg.org/ffmpeg-devices.html#x11grab) is the
+  automatic fallback when GSR cannot start (no usable GPU, e.g. Xvfb in the
+  tests below). It makes the X server copy every frame to the CPU: at full-screen
+  4K, X11 requests stalled for up to 0.8 s (p99 ~300 ms), visible as desktop and
+  game stutter while recording. It also draws the region border for GSR
+  recordings, via an x11grab that grabs one frame per hour.
   Nix's `ffmpeg-full` is required: the regular `ffmpeg` in the pinned nixpkgs
   does not include x11grab.
 - [SimpleScreenRecorder](https://www.maartenbaert.be/simplescreenrecorder/) is
