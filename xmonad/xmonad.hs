@@ -142,7 +142,7 @@ customKeys c =
 
 baseWorkspaceLabel :: WorkspaceId -> String
 baseWorkspaceLabel ws = case ws of
-  "1" -> workspaceLabel "1" 0xf080 "btop"
+  "1" -> workspaceLabel "1" 0xf080 "tmog"
   "2" -> workspaceLabel "2" 0xf1bc "spotify"
   "3" -> workspaceLabel "3" 0xf086 "chats"
   "4" -> workspaceLabel "4" 0xf120 "tmux"
@@ -210,9 +210,9 @@ autostartWorkspaceApp :: WorkspaceId -> X ()
 autostartWorkspaceApp currentWs = case currentWs of
   "1" ->
     ensureWindowOnWorkspace
-      ["btop", "Btop"]
+      ["Task Manager TMOG"]
       "1"
-      "alacritty --class btop,btop -e sh -lc \"exec btop\""
+      "tmog-task-manager"
   "2" ->
     ensureWindowOnWorkspace
       ["spotify", "Spotify", "com.spotify.Client"]
