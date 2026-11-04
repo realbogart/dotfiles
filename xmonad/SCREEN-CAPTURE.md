@@ -40,6 +40,23 @@ to MP4 instead, so the recording is not lost. For reference, full-screen 4K
 gameplay went from ~300 MB to ~50 MB per minute; ordinary desktop content is
 far smaller.
 
+Finished videos are also put on the clipboard, as a `text/uri-list` file
+reference (what a file manager copies), so Ctrl+V attaches the video in apps
+that accept pasted files: browsers, Discord, Slack, file managers. It does not
+paste into terminals or plain text fields; CopyQ keeps the previous clipboard
+entry. The xclip owner runs in its own transient user unit so it outlives the
+recording service, and the copy is verified before the notification says so.
+
+## Viewing captures
+
+Left-click a "saved" notification to open the capture: PNGs in nsxiv, videos in
+mpv (`keep-open`, so it stays on the last frame; `l` sets an A-B loop). The
+notification shows the screenshot itself or the video's first frame as its
+icon. Dunst is configured so left-click runs a notification's default action
+and closes it (notifications without actions just close), middle-click closes,
+right-click closes all. These are also the default apps for PNG/JPEG/GIF/WebP
+and MP4/MKV/WebM, for example from a browser's downloads or `xdg-open`.
+
 Desktop sound is the default for both the shortcut and `screen-capture record`.
 It uses the current default output's monitor source. Advanced terminal-only
 options remain available: `screen-capture record mic` uses the default microphone,

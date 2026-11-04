@@ -14,6 +14,11 @@ horizontal_padding = 12
 frame_width = 2
 separator_height = 2
 corner_radius = 0
+# Left click runs a notification's default action (e.g. open a capture), then closes it.
+mouse_left_click = do_action, close_current
+mouse_middle_click = close_current
+mouse_right_click = close_all
+max_icon_size = 128
 show_age_threshold = 60
 idle_threshold = 120
 

@@ -94,6 +94,81 @@ copy_image() {
     rm -f "$check"
 }
 
+detach() {
+    # Run in a separate user unit, so it outlives this script and the recording service.
+    systemd-run --user --quiet --collect --property=Type=exec \
+        --setenv="DISPLAY=$DISPLAY" --setenv="XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}" \
+        --setenv="PATH=$PATH" "$@"
+}
+
+file_uri() {
+    local LC_ALL=C path=$1 uri='file://' char i
+    for ((i = 0; i < ${#path}; i++)); do
+        char=${path:i:1}
+        case $char in
+            [A-Za-z0-9/._~-]) uri+=$char ;;
+            *) printf -v char '%%%02X' "'$char"; uri+=$char ;;
+        esac
+    done
+    printf '%s\r\n' "$uri"
+}
+
+copy_file() {
+    # Videos go on the clipboard as a file reference, like a file manager's copy.
+    # Apps that accept pasted files (browsers, Discord, Slack) attach the video.
+    local uri attempt
+    uri=$(mktemp "$runtime/uri.XXXXXX")
+    file_uri "$1" > "$uri"
+    detach --property=StandardOutput=null "$(command -v xclip)" -quiet -selection clipboard -t text/uri-list -loops 0 -i "$uri" || {
+        rm -f "$uri"
+        return 1
+    }
+    for attempt in {1..30}; do
+        sleep 0.1
+        if timeout 3 xclip -selection clipboard -t text/uri-list -o 2>/dev/null | cmp -s - "$uri"; then
+            rm -f "$uri"
+            return 0
+        fi
+    done
+    rm -f "$uri"
+    printf 'Clipboard not verified after %s attempts\n' "$attempt" >&2
+    return 1
+}
+
+video_thumbnail() {
+    local thumbnail
+    thumbnail=$(mktemp "$runtime/thumbnail.XXXXXX.png")
+    if ffmpeg -hide_banner -loglevel error -nostdin -y -i "$1" -frames:v 1 \
+        -vf 'scale=256:256:force_original_aspect_ratio=decrease' "$thumbnail" && [[ -s $thumbnail ]]; then
+        printf '%s\n' "$thumbnail"
+    else
+        rm -f "$thumbnail"
+        printf 'video-x-generic\n'
+    fi
+}
+
+notify_saved() {
+    # Usage: notify_saved FILE ICON NOTIFY-SEND-ARGS...; clicking opens FILE.
+    detach "$(command -v bash)" "$0" _notify-saved "$@" ||
+        notify -i "$2" "${@:3}"
+}
+
+open_capture() {
+    case $1 in
+        *.png) exec nsxiv -- "$1" ;;
+        *) exec mpv -- "$1" ;;
+    esac
+}
+
+deliver_video() {
+    local title=$1 destination=$2 note=${3:-} icon
+    if copy_file "$destination"; then title+=' and copied'; else note+=' Not copied to the clipboard.'; fi
+    icon=$(video_thumbnail "$destination")
+    notify_saved "$destination" "$icon" -t 8000 "$title" \
+        "${destination/#"$HOME"/\~} · $(human_size "$destination")
+Click to play.${note:+ $note}"
+}
+
 record_worker() {
     local geometry=$1 audio=$2 destination=$3 encoder='' stopped=0 result=0
     local partial="${destination%.mp4}.recording.mkv"
@@ -151,7 +226,7 @@ record_worker() {
     notify -t 3000 'Compressing recording…' 'Xmobar shows SAVING until it is done.'
     if compress_video "$partial" "$destination" && is_h264 "$destination"; then
         rm -f "$partial"
-        notify 'Recording saved' "$destination ($(human_size "$destination"))"
+        deliver_video 'Recording saved' "$destination"
         return 0
     fi
     # Never lose a recording to a failed compression: fall back to a remux.
@@ -159,8 +234,8 @@ record_worker() {
     if ffmpeg -hide_banner -loglevel error -nostdin -n -i "$partial" \
         -map 0 -c copy -movflags +faststart "$destination" && is_h264 "$destination"; then
         rm -f "$partial"
-        notify -u critical 'Recording saved uncompressed' \
-            "Compression failed; see journalctl --user -u $unit. $destination"
+        deliver_video 'Recording saved uncompressed' "$destination" \
+            "Compression failed; see journalctl --user -u $unit."
     else
         die "Could not finalize video. Recovery file: $partial"
     fi
@@ -189,6 +264,13 @@ case "$command" in
     _record)
         record_worker "$@"
         exit 0 ;;
+    _notify-saved)
+        file=$1 icon=$2
+        shift 2
+        action=$(notify-send --app-name='Screen capture' --wait --action=default=Open -i "$icon" "$@") || true
+        if [[ $icon == "$runtime"/thumbnail.* ]]; then rm -f "$icon"; fi
+        if [[ $action == default ]]; then open_capture "$file"; fi
+        exit 0 ;;
     shot|annotate|full|record) ;;
     *)
         cat <<'EOF'
@@ -198,7 +280,9 @@ screen-capture full                Save and copy the entire desktop
 screen-capture record [desktop|silent|mic] [WxH+X+Y]
                                   Select/start with desktop sound (default), or stop
 screen-capture stop                Stop and save without starting a new recording
-screen-capture status              Xmobar recording indicator
+screen-capture status              Xmobar recording/saving indicator
+Click a "saved" notification to open the capture (nsxiv for PNGs, mpv for videos).
+Videos are copied as a file reference: paste them into a browser, Discord or Slack.
 Escape/right-click cancels rectangle selection. Files remain local.
 EOF
         exit 0 ;;
@@ -235,11 +319,8 @@ if [[ $command == record ]]; then
     directory=$(media_directory VIDEOS Videos Recordings)
     mkdir -p "$directory"
     destination="$directory/Recording-$(date +%Y-%m-%d_%H-%M-%S-%N).mp4"
-    systemd-run --user --quiet --collect --unit="$unit" \
-        --property=Type=exec --property=KillMode=mixed \
+    detach --unit="$unit" --property=KillMode=mixed \
         --property=TimeoutStopSec=30min --property=UMask=0077 \
-        --setenv="DISPLAY=$DISPLAY" --setenv="XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}" \
-        --setenv="PATH=$PATH" \
         "$(command -v bash)" "$0" _record "$geometry" "$audio" "$destination" ||
         die 'Could not start the recording service.'
 else
@@ -266,6 +347,8 @@ else
     destination="$directory/Screenshot-$(date +%Y-%m-%d_%H-%M-%S-%N).png"
     mv "$temporary" "$destination"
     copy_image "$destination"
-    notify -t 3500 'Screenshot saved and copied' "$destination"
+    notify_saved "$destination" "$destination" -t 6000 'Screenshot saved and copied' \
+        "${destination/#"$HOME"/\~}
+Click to view."
     printf '%s\n' "$destination"
 fi

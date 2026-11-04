@@ -158,7 +158,10 @@ with tempfile.TemporaryDirectory(prefix="screen-capture-test-") as tmp:
         assert float(info["format"]["duration"]) >= 1
         run("ffmpeg", "-v", "error", "-i", str(files[0]), "-f", "null", "-")
         assert not list(videos.rglob("*.mkv"))
-        print("PASS recording toggle, REC indicator, odd dimensions, H.264/MP4, full decode", flush=True)
+        # The finished video is offered as a file reference for pasting into apps.
+        pasted = run("xclip", "-selection", "clipboard", "-t", "text/uri-list", "-o").stdout
+        assert pasted == files[0].resolve().as_uri().encode() + b"\r\n", pasted
+        print("PASS recording toggle, REC indicator, odd dimensions, H.264/MP4, full decode, file on clipboard", flush=True)
 
         run(capture, "record", "silent", "320x240+100+100")
         run(capture, "stop")
