@@ -8,7 +8,7 @@ import Data.Char (chr)
 import Data.List (find)
 import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
 import XMonad.Hooks.InsertPosition (Focus (Newer), Position (End, Master), insertPosition)
-import XMonad.Hooks.ManageHelpers (doCenterFloat, isDialog)
+import XMonad.Hooks.ManageHelpers (doCenterFloat, doRectFloat, isDialog)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks)
 import XMonad.Hooks.Place (fixed, placeHook, withGaps)
 import XMonad.Hooks.StatusBar (StatusBarConfig, statusBarProp, withSB)
@@ -61,6 +61,7 @@ main =
     , manageHook =
         dialogManageHook
         <+> gsimplecalManageHook
+        <+> tmogManageHook
         <+> insertPosition End Newer
         <+> manageSpawn
         <+> chatClientManageHook
@@ -197,6 +198,13 @@ gsimplecalManageHook =
     [ appName =? "gsimplecal" --> placeHook (withGaps (0, 0, 32, 0) (fixed (1, 1)))
     , className =? "Gsimplecal" --> placeHook (withGaps (0, 0, 32, 0) (fixed (1, 1)))
     ]
+
+-- TMOG draws its graphs on the CPU, so a fullscreen 4K window stutters.
+-- Float it centred at a quarter of the screen (1920x1080 at 4K).
+tmogManageHook :: ManageHook
+tmogManageHook =
+  className =? "Task Manager TMOG"
+    --> doRectFloat (W.RationalRect (1 / 4) (1 / 4) (1 / 2) (1 / 2))
 
 autostartWorkspaceApps :: X ()
 autostartWorkspaceApps = do

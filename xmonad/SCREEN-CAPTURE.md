@@ -28,7 +28,17 @@ that accepts images; middle-click uses X11's separate primary selection.
 Videos use H.264, 30 fps, and MP4; desktop sound uses AAC. Odd rectangle sizes
 are padded by at most one pixel for compatibility. During recording, a
 `.recording.mkv` file is retained so an interrupted session can be recovered.
-It is removed after successful MP4 finalization. Capture stays local.
+Capture stays local.
+
+Live capture uses a fast, high-bitrate encode so it keeps up at 4K. After
+stopping, that file is re-encoded for sharing (x264 `slow`, CRF 26, scaled down
+to fit 1920×1080, or 1080×1920 for portrait rectangles; never upscaled). Xmobar
+shows **SAVING** meanwhile; the MKV is deleted once the MP4 is verified. It runs
+at about 5× real time even on full-screen 4K game footage: a three-minute
+recording takes under a minute. If compression fails, the original is remuxed
+to MP4 instead, so the recording is not lost. For reference, full-screen 4K
+gameplay went from ~300 MB to ~50 MB per minute; ordinary desktop content is
+far smaller.
 
 Desktop sound is the default for both the shortcut and `screen-capture record`.
 It uses the current default output's monitor source. Advanced terminal-only
@@ -85,6 +95,8 @@ nix shell --inputs-from /etc/nixos \
   nixpkgs#xclip nixpkgs#copyq nixpkgs#ffmpeg-full nixpkgs#pulseaudio \
   -c python3 ~/dotfiles/xmonad/test-screen-capture.py ~/.local/bin/screen-capture
 ```
+
+Alt+Print while SAVING only shows a notification; it does not start a new recording.
 
 Recording diagnostics:
 

@@ -17,11 +17,38 @@ die() {
     exit 1
 }
 
+unit_state() {
+    systemctl --user show "$unit" -p ActiveState --value 2>/dev/null || true
+}
+
 active() {
-    case $(systemctl --user show "$unit" -p ActiveState --value 2>/dev/null) in
+    case $(unit_state) in
         active|activating|deactivating) return 0 ;;
         *) return 1 ;;
     esac
+}
+
+human_size() {
+    numfmt --to=iec --suffix=B --format='%.1f' "$(stat -c %s "$1")"
+}
+
+is_h264() {
+    ffprobe -v error -select_streams v:0 -show_entries stream=codec_name \
+        -of csv=p=0 "$1" | grep -qx h264
+}
+
+compress_video() {
+    # Live capture favours speed; this second pass makes the file shareable.
+    # Fit within 1920×1080 (1080×1920 for portrait) without upscaling.
+    local input=$1 output=$2 box
+    local -a scale=()
+    if ((width >= height)); then box=1920:1080; else box=1080:1920; fi
+    if ((width > ${box%:*} || height > ${box#*:})); then
+        scale=(-vf "scale=$box:force_original_aspect_ratio=decrease:force_divisible_by=2:flags=lanczos")
+    fi
+    nice -n 10 ffmpeg -hide_banner -loglevel error -nostdin -n -i "$input" \
+        -map 0 "${scale[@]}" -c:v libx264 -preset slow -crf 26 -pix_fmt yuv420p \
+        -c:a copy -movflags +faststart "$output"
 }
 
 select_region() {
@@ -121,12 +148,19 @@ record_worker() {
     fi
     trap '' TERM INT
     [[ -s $partial ]] || die 'No video frames were recorded.'
-    if ffmpeg -hide_banner -loglevel error -nostdin -n -i "$partial" \
-        -map 0 -c copy -movflags +faststart "$destination" &&
-        ffprobe -v error -select_streams v:0 -show_entries stream=codec_name \
-            -of csv=p=0 "$destination" | grep -qx h264; then
+    notify -t 3000 'Compressing recording…' 'Xmobar shows SAVING until it is done.'
+    if compress_video "$partial" "$destination" && is_h264 "$destination"; then
         rm -f "$partial"
-        notify 'Recording saved' "$destination"
+        notify 'Recording saved' "$destination ($(human_size "$destination"))"
+        return 0
+    fi
+    # Never lose a recording to a failed compression: fall back to a remux.
+    rm -f "$destination"
+    if ffmpeg -hide_banner -loglevel error -nostdin -n -i "$partial" \
+        -map 0 -c copy -movflags +faststart "$destination" && is_h264 "$destination"; then
+        rm -f "$partial"
+        notify -u critical 'Recording saved uncompressed' \
+            "Compression failed; see journalctl --user -u $unit. $destination"
     else
         die "Could not finalize video. Recovery file: $partial"
     fi
@@ -136,7 +170,9 @@ command=${1:-help}
 shift || true
 case "$command" in
     status)
-        if active; then
+        if [[ $(unit_state) == deactivating ]]; then
+            printf '<fc=#fabd2f>● SAVING</fc> '
+        elif active; then
             audio=''
             if [[ -r $runtime/audio-mode ]]; then read -r audio < "$runtime/audio-mode"; fi
             case "$audio" in
@@ -170,7 +206,11 @@ esac
 
 [[ -n ${DISPLAY:-} ]] || die 'An X11 display is required.'
 if [[ $command == record ]] && active; then
-    systemctl --user stop "$unit"
+    if [[ $(unit_state) == deactivating ]]; then
+        notify -t 2500 'Still saving' 'The previous recording is being compressed.'
+    else
+        systemctl --user stop "$unit"
+    fi
     exit 0
 fi
 # One selection dialog at a time. The recording itself runs in a user service.
@@ -197,7 +237,7 @@ if [[ $command == record ]]; then
     destination="$directory/Recording-$(date +%Y-%m-%d_%H-%M-%S-%N).mp4"
     systemd-run --user --quiet --collect --unit="$unit" \
         --property=Type=exec --property=KillMode=mixed \
-        --property=TimeoutStopSec=60 --property=UMask=0077 \
+        --property=TimeoutStopSec=30min --property=UMask=0077 \
         --setenv="DISPLAY=$DISPLAY" --setenv="XAUTHORITY=${XAUTHORITY:-$HOME/.Xauthority}" \
         --setenv="PATH=$PATH" \
         "$(command -v bash)" "$0" _record "$geometry" "$audio" "$destination" ||
