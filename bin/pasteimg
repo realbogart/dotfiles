@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# pasteimg - save the image currently in the clipboard to the current directory.
+#
+# On WSL it uses the Windows clipboard (via PowerShell); if there is no image
+# there (or not on WSL) it falls back to the Linux clipboard (wl-paste on
+# Wayland, xclip/xsel on X11).
+#
+# Usage: pasteimg [filename]    (default: clipboard-YYYYmmdd-HHMMSS.png)
+
+set -euo pipefail
+
+filename="${1:-clipboard-$(date +%Y%m%d-%H%M%S).png}"
+
+if [[ -e "$filename" ]]; then
+    echo "Error: '$filename' already exists" >&2
+    exit 1
+fi
+
+fail() {
+    rm -f "$filename"
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# NixOS-WSL doesn't add the Windows interop bits to PATH, so fall back to
+# canonical locations.
+powershell_bin=""
+if command -v powershell.exe >/dev/null 2>&1; then
+    powershell_bin=powershell.exe
+elif [[ -x /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe ]]; then
+    powershell_bin=/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe
+fi
+
+wslpath_bin=""
+if command -v wslpath >/dev/null 2>&1; then
+    wslpath_bin=wslpath
+elif [[ -x /sbin/wslpath ]]; then
+    wslpath_bin=/sbin/wslpath
+elif [[ -x /usr/sbin/wslpath ]]; then
+    wslpath_bin=/usr/sbin/wslpath
+fi
+
+paste_from_windows() {
+    # WSL mangles backslashes in WSLENV-passed environment variables
+    # (replacing them with a private-use Unicode character), so we cannot
+    # pass a \\wsl.localhost\... UNC path across. Instead pass the distro
+    # name and the target relative to the distro root, and let PowerShell
+    # build the UNC path on the Windows side.
+    local distro rel
+    distro="$("$wslpath_bin" -w / | awk -F'\\' '{print $4}')"
+    rel="${PWD}/${filename}"
+    rel="${rel#/}"
+
+    CLIPIMG_DISTRO="$distro" \
+    CLIPIMG_REL="$rel" \
+    WSLENV="${WSLENV:+$WSLENV:}CLIPIMG_DISTRO/p:CLIPIMG_REL/p" \
+    "$powershell_bin" -NoProfile -Sta -Command '
+        Add-Type -AssemblyName System.Windows.Forms
+
+        $img = [Windows.Forms.Clipboard]::GetImage()
+
+        if ($null -eq $img) {
+            [Console]::Error.WriteLine("No image in Windows clipboard")
+            exit 1
+        }
+
+        $target = "\\wsl.localhost\" + $env:CLIPIMG_DISTRO + "\" + $env:CLIPIMG_REL.Replace("/", "\")
+        $img.Save($target, [System.Drawing.Imaging.ImageFormat]::Png)
+        $img.Dispose()
+    '
+}
+
+paste_from_linux() {
+    if command -v wl-paste >/dev/null 2>&1; then
+        if ! wl-paste --type image/png > "$filename"; then
+            fail "No image in Linux clipboard"
+        fi
+    elif command -v xclip >/dev/null 2>&1; then
+        if ! xclip -selection clipboard -t image/png -o > "$filename" 2>/dev/null; then
+            fail "No image in Linux clipboard"
+        fi
+    elif command -v xsel >/dev/null 2>&1; then
+        if ! xsel --clipboard --format image/png > "$filename"; then
+            fail "No image in Linux clipboard"
+        fi
+    else
+        fail "No clipboard tool found (need wl-paste, xclip or xsel)"
+    fi
+
+    if [[ ! -s "$filename" ]]; then
+        fail "No image in Linux clipboard"
+    fi
+}
+
+if [[ -n "$powershell_bin" && -n "$wslpath_bin" ]]; then
+    if ! paste_from_windows; then
+        # Nothing on the Windows clipboard; maybe the Linux one has an image.
+        paste_from_linux
+    fi
+    # Defense in depth: a "successful" run must have produced the file.
+    [[ -s "$filename" ]] || fail "Failed to save image from clipboard"
+else
+    paste_from_linux
+fi
+
+echo "Saved: $filename"

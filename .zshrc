@@ -112,7 +112,7 @@ fi
 #
 eval "$(starship init zsh)"
 
-export PATH=~/.pyenv/bin:~/projects/wsl-utils:/snap/bin:~/.local/bin:~/.local/bin:~/.ghcup/bin:$PATH
+export PATH=~/dotfiles/bin:~/.pyenv/bin:~/projects/wsl-utils:/snap/bin:~/.local/bin:~/.local/bin:~/.ghcup/bin:$PATH
 
 export CC=clang
 export CXX=clang++
